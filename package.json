@@ -2,14 +2,20 @@
   "name": "serphint",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "build": "expo export:web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "clean": "rm -rf node_modules && npm cache clean --force"
   },
   "jest": {
     "preset": "jest-expo"
@@ -45,5 +51,32 @@
     "react-test-renderer": "18.2.0",
     "typescript": "~5.3.3"
   },
-  "private": true
+  "overrides": {
+    "rimraf": "^5.0.0",
+    "glob": "^10.0.0",
+    "@xmldom/xmldom": "^0.8.10",
+    "@babel/plugin-proposal-optional-catch-binding": "@babel/plugin-transform-optional-catch-binding",
+    "@babel/plugin-proposal-numeric-separator": "@babel/plugin-transform-numeric-separator",
+    "@babel/plugin-proposal-object-rest-spread": "@babel/plugin-transform-object-rest-spread",
+    "@babel/plugin-proposal-optional-chaining": "@babel/plugin-transform-optional-chaining",
+    "@babel/plugin-proposal-async-generator-functions": "@babel/plugin-transform-async-generator-functions"
+  },
+  "resolutions": {
+    "rimraf": "^5.0.0",
+    "glob": "^10.0.0",
+    "@xmldom/xmldom": "^0.8.10"
+  },
+  "private": true,
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
