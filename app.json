@@ -28,7 +28,12 @@
     },
     "plugins": [
       "expo-router",
-      "react-native-reanimated"
+      [
+        "react-native-reanimated",
+        {
+          "relativeSourceLocation": "./node_modules/react-native-reanimated"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
