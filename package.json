@@ -2,11 +2,12 @@
   "name": "serphint",
   "version": "1.0.0",
   "description": "Serphint AI Computer Use",
-  "main": "index.js",
+  "main": "electron/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron-forge start",
-    "build": "electron-forge make"
+    "start": "cross-env NODE_ENV=development concurrently \"webpack --watch\" \"electron-forge start\"",
+    "webpack": "webpack --config webpack.config.js",
+    "build": "cross-env NODE_ENV=production webpack && electron-forge make"
   },
   "author": "Edward Anuichi",
   "license": "ISC",
@@ -14,8 +15,20 @@
     "@babel/core": "^7.26.0",
     "@babel/preset-react": "^7.25.9",
     "@electron-forge/cli": "^7.6.0",
+    "@electron-forge/maker-dmg": "^7.6.0",
     "@electron-forge/maker-squirrel": "^7.6.0",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
     "electron": "^33.2.1",
+    "electron-reload": "^2.0.0-alpha.1",
+    "electron-reloader": "^1.2.3",
+    "file-loader": "^6.2.0",
+    "nodemon": "^3.1.7",
     "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "babel-loader": "^9.2.1",
+    "react-dom": "^18.3.1",
+    "react-native-web": "^0.19.13"
   }
 }
