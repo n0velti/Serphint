@@ -8,11 +8,18 @@ function MessageArea(props) {
 
     const [message, setMessage] = useState('');
 
+
+    
+
     const sendMessage = () => {
         props.setIsRunning(!props.isRunning);
         props.setSentMessage(message);
 
-        console.log('Sending message:', message);
+        const number = parseInt(message); //missing .value for now
+        console.log('Sending number:', typeof number, number);
+        window.electron.send('add-number', number);
+
+
         setMessage(' ');
     }
 

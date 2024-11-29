@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, StyleSheet, Text } from 'react-native-web';
 import MessageArea from './MessageArea';
 
@@ -6,12 +6,21 @@ function ChatView(props) {
 
     const [isRunning, setIsRunning] = useState(false);
     const [sentMessage, setSentMessage] = useState(' ');
+    const [receivedMessage, setReceivedMessage] = useState(' ');
+
+
+    useEffect(() => {   
+        window.electron.receive('result', (result) => {
+            setReceivedMessage(result);
+        })
+    }, []);
 
     return (
         <View style={styles.chatViewContainer}>
 
             <View style={styles.header}>
                 <Text style={styles.headerText}>{sentMessage}</Text>
+                <Text style={styles.headerTextLower}>{receivedMessage}</Text>
             </View>
 
             <MessageArea isRunning={isRunning} setIsRunning={setIsRunning} setSentMessage={setSentMessage}/>
@@ -32,10 +41,16 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: '#f5f5f5',
         borderRadius: 5,
-        marginBottom: 10
+        marginBottom: 10,
+        display: 'flex',
+        flexDirection: 'column',
     },
     headerText: {
         fontSize: 16,
         color: '#333'
+    },
+    headerTextLower: {
+        fontSize: 12,
+        color: '#777'
     }
 });
