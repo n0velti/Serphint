@@ -2,13 +2,14 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import TitleBar from './components/TitleBar';
+import ChatView from './components/ChatView/ChatView';
 
 export default function App() {
   return (
     <View style={styles.container}>
         <TitleBar />
         <View style={styles.content}>
-        {/* Your other components */}
+            <ChatView />
         </View>
     </View>
   );

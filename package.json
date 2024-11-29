@@ -5,7 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cross-env NODE_ENV=development concurrently \"webpack --watch\" \"electron-forge start\"",
+    "start": "cross-env NODE_ENV=development DEBUG=* concurrently \"webpack --watch\" \"electron-forge start --enable-logging\"",
     "webpack": "webpack --config webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack && electron-forge make"
   },
