@@ -12,8 +12,10 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { useFormContext } from 'react-hook-form';
 
 const PageThree = ({ setCurrentPage }) => {
+    
     const [mediaItems, setMediaItems] = useState([]);
     
     // TikTok-like specifications

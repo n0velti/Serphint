@@ -9,7 +9,7 @@ import PageThreeBrand from './AddBrand/PageThree';
 import PageTwoProduct from './AddProduct/PageTwo';
 import PageTwoBrand from './AddBrand/PageTwo';
 import PageTwoRevised from './AddProduct/PageTwoRevised';
-
+import { BrandFormProvider } from './AddBrand/BrandFormContext';
 
 function AddProductOrBrandLayout(props) {
 
@@ -52,13 +52,15 @@ function AddProductOrBrandLayout(props) {
             }
 
             {modalState == "addBrand" &&
-            <View>
+            <BrandFormProvider>
+                <View>
 
-                {currentPage == 1 && <AddBrand currentPage={currentPage} setCurrentPage={setCurrentPage}/> }
-                {currentPage == 2 && <PageTwoBrand currentPage={currentPage} setCurrentPage={setCurrentPage}/> }
-                {currentPage == 3 && <PageThreeBrand currentPage={currentPage} setCurrentPage={setCurrentPage} handleStateChange={handleStateChange} />}
+                    {currentPage == 1 && <AddBrand currentPage={currentPage} setCurrentPage={setCurrentPage}/> }
+                    {currentPage == 2 && <PageTwoBrand currentPage={currentPage} setCurrentPage={setCurrentPage}/> }
+                    {currentPage == 3 && <PageThreeBrand currentPage={currentPage} setCurrentPage={setCurrentPage} handleStateChange={handleStateChange} />}
 
-            </View>
+                </View>
+            </BrandFormProvider>
             }
 
         </View>

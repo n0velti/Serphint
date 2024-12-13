@@ -1,7 +1,12 @@
 import React from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { useFormContext } from 'react-hook-form';
+
 function PageTwo(props) {
+    const { register, formState: { errors }, watch, setValue } = useFormContext();
+
     return (
+
         <View style={styles.container}>
             <View style={styles.header}>    
                 <Text style={styles.headerText}>Details</Text>
@@ -9,21 +14,43 @@ function PageTwo(props) {
 
             <View style={styles.body}>
                 <View style={styles.sloganContainer}>
-                    <Text style={styles.label}>Slogan</Text>
-                    <TextInput style={styles.input} />
+                <Text style={styles.label}>Slogan</Text>
+                <TextInput
+                    style={[styles.input, errors.slogan && styles.inputError]}
+                    onChangeText={(text) => setValue('slogan', text)}
+                    value={watch('slogan')}
+                />
+                {errors.slogan && (
+                    <Text style={styles.errorText}>{errors.slogan.message}</Text>
+                )}
                 </View>
 
                 <View style={styles.locationContainer}>
-                    <Text style={styles.label}>Location</Text>
-                    <TextInput style={styles.input} />
+                <Text style={styles.label}>Location</Text>
+                <TextInput
+                    style={[styles.input, errors.location && styles.inputError]}
+                    onChangeText={(text) => setValue('location', text)}
+                    value={watch('location')}
+                />
+                {errors.location && (
+                    <Text style={styles.errorText}>{errors.location.message}</Text>
+                )}
                 </View>
 
                 <View style={styles.descriptionContainer}>
-                    <Text style={styles.label}>Description</Text>
-                    <TextInput style={styles.input} />
+                <Text style={styles.label}>Description</Text>
+                <TextInput
+                    style={[styles.input, errors.description && styles.inputError]}
+                    onChangeText={(text) => setValue('description', text)}
+                    value={watch('description')}
+                    multiline
+                />
+                {errors.description && (
+                    <Text style={styles.errorText}>{errors.description.message}</Text>
+                )}
                 </View>
-
             </View>
+
 
             <View style={styles.navigationContainer}>
                 <TouchableOpacity style={styles.nextBtn} onPress={() => props.setCurrentPage(3)}>

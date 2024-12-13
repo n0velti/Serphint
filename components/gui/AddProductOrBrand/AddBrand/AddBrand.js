@@ -1,20 +1,31 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { useFormContext } from 'react-hook-form';
 
 function AddBrand(props) {
+    const { register, formState: { errors }, watch, setValue } = useFormContext();
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerText}>Add Brand</Text>
             </View>
 
-            <View style={styles.body}>  
+            <View style={styles.body}>
                 <View style={styles.brandNameContainer}>
-                    <Text style={styles.brandNameText}>Brand Name</Text>
-                    <TextInput style={styles.brandNameInput}/>
+                <Text style={styles.brandNameText}>Brand Name</Text>
+                <TextInput
+                    style={[
+                    styles.brandNameInput,
+                    errors.brandName && styles.inputError
+                    ]}
+                    onChangeText={(text) => setValue('brandName', text)}
+                    value={watch('brandName')}
+                />
+                {errors.brandName && (
+                    <Text style={styles.errorText}>{errors.brandName.message}</Text>
+                )}
                 </View>
-
-
             </View>
 
             <View style={styles.navigationContainer}>

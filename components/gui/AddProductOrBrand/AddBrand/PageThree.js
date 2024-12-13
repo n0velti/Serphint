@@ -1,30 +1,37 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useFormContext } from 'react-hook-form';
 
 function PageThree(props) {
-    const [brandLogo, setBrandLogo] = useState(null);
+    const { setValue, watch } = useFormContext();
+    const logoUri = watch('logoUri');
 
     const pickImage = async () => {
-        // Request permissions
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         
         if (permissionResult.granted === false) {
-            alert('Permission to access camera roll is required!');
-            return;
+        alert('Permission to access camera roll is required!');
+        return;
         }
 
-        // Launch image picker
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
         });
 
         if (!result.canceled) {
-            setBrandLogo(result.assets[0].uri);
+        setValue('logoUri', result.assets[0].uri);
         }
+    };
+
+    const handleSubmit = async () => {
+        const formData = watch();
+        // Here you would typically submit the form data to your backend
+        console.log('Form submitted:', formData);
+        props.handleStateChange("0");
     };
 
     return (
@@ -35,9 +42,9 @@ function PageThree(props) {
 
             <View style={styles.body}>
                 <TouchableOpacity style={styles.logoContainer} onPress={pickImage}>
-                    {brandLogo ? (
+                    {logoUri ? (
                         <Image 
-                            source={{ uri: brandLogo }} 
+                            source={{ uri: logoUri }} 
                             style={styles.logo}
                         />
                     ) : (
@@ -49,11 +56,17 @@ function PageThree(props) {
             </View>
 
             <View style={styles.navigationContainer}>
-                <TouchableOpacity style={styles.nextBtn} onPress={() => props.setCurrentPage(2)}>
-                    <Text style={styles.nextBtnText}>Back</Text>
+                <TouchableOpacity 
+                style={styles.nextBtn} 
+                onPress={() => props.setCurrentPage(2)}
+                >
+                <Text style={styles.nextBtnText}>Back</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.nextBtn} onPress={() => props.handleStateChange("null")}>
-                    <Text style={styles.nextBtnText}>Finish</Text>
+                <TouchableOpacity 
+                style={styles.nextBtn} 
+                onPress={handleSubmit}
+                >
+                <Text style={styles.nextBtnText}>Finish</Text>
                 </TouchableOpacity>
             </View>
         </View>

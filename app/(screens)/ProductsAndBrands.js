@@ -29,7 +29,7 @@ export default function ProductsAndBrands() {
     
     const handleLayoutChange = (type) => {
         console.log(type);
-        if(type == "null"){closeModal();}
+        if(type == "0"){closeModal();}
         setCurrentSnapPoint(['90%']); // Change to 80% when selection is made
     };
 
