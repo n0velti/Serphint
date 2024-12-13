@@ -1,7 +1,7 @@
 import { generateClient } from 'aws-amplify/data';
+import { uploadData } from 'aws-amplify/storage'; 
 import type { Schema } from '@/amplify/data/resource';
 import { useState } from 'react';
-import { Storage } from 'aws-amplify/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 const client = generateClient<Schema>();
@@ -24,12 +24,15 @@ export const useBrandOperations = () => {
       const blob = await response.blob();
       const key = `brands/logos/${uuidv4()}-${Date.now()}`;
       
-      await Storage.upload(key, blob, {
-        contentType: 'image/jpeg',
-        accessLevel: 'public'
-      });
+      const uploadLogoData = await uploadData({
+        path: key,
+        data: blob,
+        options: {
+          bucket: 'SerphintBrandLogoStorage'
+        }
+    }).result;
       
-      return key;
+      return uploadLogoData;
     } catch (err) {
       console.error('Error uploading logo:', err);
       throw err;
@@ -41,13 +44,13 @@ export const useBrandOperations = () => {
     setError(null);
     
     try {
-      let logoKey = undefined;
+      let uploadLogoData = undefined;
       if (brandData.logoUri) {
-        logoKey = await uploadLogo(brandData.logoUri);
+        uploadLogoData = await uploadLogo(brandData.logoUri);
       }
       const result = await client.models.Brand.create({
         ...brandData,
-        logoUri: logoKey,
+        logoUri: uploadLogoData?.path,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -66,14 +69,16 @@ export const useBrandOperations = () => {
     
     try {
       let logoKey = brandData.logoUri;
+      let uploadLogoData = undefined;
+
       if (brandData.logoUri?.startsWith('file://')) {
-        logoKey = await uploadLogo(brandData.logoUri);
+        uploadLogoData = await uploadLogo(brandData.logoUri);
       }
 
       const result = await client.models.Brand.update({
         id,
         ...brandData,
-        logoUri: logoKey,
+        logoUri: logoKey ? logoKey : uploadLogoData?.path,
         updatedAt: new Date().toISOString(),
       });
 

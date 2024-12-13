@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "app/(tabs)/library.js"  ]
+, "app/(tabs)/library.js", "components/gui/AddProductOrBrand/AddBrand/PageThree.js"  ]
 }
