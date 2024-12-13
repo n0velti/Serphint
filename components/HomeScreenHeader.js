@@ -22,7 +22,7 @@ function HomeScreenHeader(props) {
                 <Text style={styles.locationText}>Montreal</Text>
             
             <View style={styles.headerBottomContainer}>
-                <Text style={styles.locationDistance}>1.9 km</Text>
+                <Text style={styles.locationDistance}>Apple</Text>
             </View>
 
         </View>
