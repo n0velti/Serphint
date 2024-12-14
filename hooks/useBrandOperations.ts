@@ -48,6 +48,9 @@ export const useBrandOperations = () => {
       if (brandData.logoUri) {
         uploadLogoData = await uploadLogo(brandData.logoUri);
       }
+
+      
+
       const result = await client.models.Brand.create({
         ...brandData,
         logoUri: uploadLogoData?.path,

@@ -37,6 +37,7 @@ function PageThree({ setCurrentPage, handleStateChange }: PageThreeProps) {
   const handleSubmit = async () => {
     try {
       const formData = getValues();
+      console.log('Form data:', formData);
       await createBrand(formData);
       handleStateChange(null);
     } catch (err) {

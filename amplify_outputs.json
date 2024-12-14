@@ -131,5 +131,32 @@
       "nonModels": {}
     }
   },
+  "storage": {
+    "aws_region": "us-east-1",
+    "bucket_name": "amplify-serphint-edward-s-serphintbrandlogostorage-ifk3esppfnrg",
+    "buckets": [
+      {
+        "name": "SerphintBrandLogoStorage",
+        "bucket_name": "amplify-serphint-edward-s-serphintbrandlogostorage-ifk3esppfnrg",
+        "aws_region": "us-east-1",
+        "paths": {
+          "brands/logos/*": {
+            "guest": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ],
+            "entityidentity": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          }
+        }
+      }
+    ]
+  },
   "version": "1.3"
 }
