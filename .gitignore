@@ -39,3 +39,5 @@ yarn-error.*
 .amplify
 
 amplifyconfiguration*
+
+amplify_outputs*
