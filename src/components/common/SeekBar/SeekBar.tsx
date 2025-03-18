@@ -27,7 +27,7 @@ const SeekBar: React.FC<SeekBarProps> = ({ currentTime, duration, isLoading, isU
   // Update progress when video plays
   useEffect(() => {
     progress.value = withTiming(currentTime / duration, { duration: 200 });
-    console.log('progress.value', progress.value);
+   // console.log('progress.value', progress.value);
   }, [currentTime, duration]);
 
   // Gesture for user seeking

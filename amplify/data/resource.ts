@@ -1,17 +1,94 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
-and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.guest()]),
+
+  Location: a.customType({
+      city: a.string().required(),
+      country: a.string().required(),
+      postalCode: a.string().required(),
+      fullAddress: a.string().required(),
+      displayAddress: a.string().required(),
+      street: a.string().required(),
+      latitude: a.float().required(),
+      longitude: a.float().required(),
+  }),
+
+  Media: a.customType({
+    mediaType: a.string().required(),
+    mediaUri: a.string().required(),
+  }),
+
+
+  Brand: a.model({
+    brandName: a.string(),
+    brandLocation: a.ref('Location'),
+    brandSlogan: a.string(),
+    brandDescription: a.string(),
+    brandProducts: a.hasMany('Product', 'productBrandId'),
+    brandHints: a.hasMany('Hint', 'hintBrandId'),
+    brandLogoUri: a.string(),
+    createdAt: a.string(),
+    updatedAt: a.string(),
+  })
+  .authorization((allow) => [allow.guest()]),
+
+
+Product: a.model({
+  productName: a.string(),
+  productBrandId: a.id(),
+  productBrand: a.belongsTo('Brand', 'productBrandId'),
+  productHints: a.hasMany('Hint', 'hintProductId'),
+  productLocation: a.ref('Location'),
+  productDescription: a.string(),
+  productDollarFigureCost: a.float(), 
+  productCentFigureCost: a.float(), 
+  productBaseCurrency: a.string(),
+  productHintValue: a.float(),
+  productDollarTotalCost: a.float(),
+  productCentTotalCost: a.float(), 
+  productMedia: a.ref('Media').array(),
+  createdAt: a.string(),
+  updatedAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+
+Hint: a.model({
+  hintBrandId: a.id(),
+  hintBrand: a.belongsTo('Brand', 'hintBrandId'),
+  hintProductId: a.id(),
+  hintProduct: a.belongsTo('Product', 'hintProductId'),
+  hintLocation: a.ref('Location'),
+  hintComments: a.hasMany('Comment', 'commentHintId'),
+  hintlikes: a.hasMany('Like', 'likeHintId'),
+  hintMedia: a.ref('Media').array(),
+  createdAt: a.string(),
+  updatedAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+
+Comment: a.model({
+  commentHintId: a.id(),
+  hintComment: a.belongsTo('Hint', 'commentHintId'),
+  content: a.string(),
+  commentParentId: a.string(),
+  commentType: a.string(),
+  createdAt: a.string(),
+  updatedAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+Like: a.model({
+  likeHintId: a.id(),
+  likeHint: a.belongsTo('Hint', 'likeHintId'),
+  type: a.string(),
+  createdAt: a.string(),
+  updatedAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -23,31 +100,3 @@ export const data = defineData({
   },
 });
 
-/*== STEP 2 ===============================================================
-Go to your frontend source code. From your client-side code, generate a
-Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
-WORK IN THE FRONTEND CODE FILE.)
-
-Using JavaScript or Next.js React Server Components, Middleware, Server 
-Actions or Pages Router? Review how to generate Data clients for those use
-cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
-=========================================================================*/
-
-/*
-"use client"
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-
-const client = generateClient<Schema>() // use this Data client for CRUDL requests
-*/
-
-/*== STEP 3 ===============================================================
-Fetch records from the database and use them in your frontend component.
-(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
-=========================================================================*/
-
-/* For example, in a React component, you can use this snippet in your
-  function's RETURN statement */
-// const { data: todos } = await client.models.Todo.list()
-
-// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>
