@@ -37,7 +37,6 @@ yarn-error.*
 
 # amplify
 .amplify
-amplify/
 
 amplifyconfiguration*
 
