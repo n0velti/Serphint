@@ -38,7 +38,7 @@ const schema = a.schema({
   })
   .authorization((allow) => [allow.guest()]),
 
-
+  
 Product: a.model({
   productName: a.string(),
   productBrandId: a.id(),
