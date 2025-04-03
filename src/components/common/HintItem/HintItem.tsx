@@ -1,12 +1,19 @@
-import React, {useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { View, Text, Image, StyleSheet, Dimensions, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 import { ProductData } from '../../../types/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Entypo } from '@expo/vector-icons';
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRouter} from 'expo-router';
 import Video, {VideoRef} from 'react-native-video';
 import VideoItem from './VideoItem';
+
+import * as Location from 'expo-location';
+
+import {startLocationTracking} from '../../../hooks/Location/useLocationServices';
+
+import { useHint } from '../../../hooks/useHint';
+
 
 // Get device dimensions
 const { width, height } = Dimensions.get('window');
@@ -18,17 +25,59 @@ interface HintItemProps {
 
 
 
-function HintItem({ item }: HintItemProps) {
+function HintItem({ item}: HintItemProps) {
   // Get the first image URL to use as background
   
   const insets = useSafeAreaInsets();
-  const ITEM_HEIGHT = height - insets.bottom;
+  const ITEM_HEIGHT = height;
 
-  console.log('HintItem', item);
+  const [locationCoords, setLocationCoords] = useState<Location.LocationObject | null>(null);
+  const [location, setLocation] = useState<Location.LocationGeocodedAddress | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<Location.LocationSubscription | null>(null);
 
-  const navigation = useNavigation();
+  //temp - eventualy set all current hint to zustand
+  const setCurrentHint = useHint(state => state.setCurrentHint);
+  setCurrentHint(item);
 
-  const videoRef = useRef<VideoRef>(null);
+  const router = useRouter();
+
+
+  useEffect(() => {
+    startLocationTracking(setLocationCoords, setErrorMsg, setSubscription);
+  }, []);
+
+  useEffect(() => {
+    if (!locationCoords) return; // Ensure locationCoords is set before calling reverse geocoding
+  
+    const getLocationDetails = async () => {
+      try {
+        const geocodedLocation = await Location.reverseGeocodeAsync({
+          latitude: locationCoords.coords.latitude,
+          longitude: locationCoords.coords.longitude,
+        });
+        setLocation(geocodedLocation[0]);
+      } catch (error) {
+        console.error("Error in reverse geocoding:", error);
+      }
+    };
+  
+    getLocationDetails();
+  }, [locationCoords]); // Runs whenever locationCoords changes
+
+
+
+  console.log('item', item);
+
+
+  const handleHeaderPress = () => { 
+    console.log('Header Pressed');
+    
+  }
+
+  const handleHintPress = () => {
+    console.log('Hint Pressed');
+  }
 
 
 
@@ -41,71 +90,66 @@ function HintItem({ item }: HintItemProps) {
           <TouchableOpacity
             activeOpacity={1}
          
-            onPress={() => navigation.navigate('Product')}
+            onPress={handleHintPress}
             style={styles.hintPressable}
           >
-            <TouchableWithoutFeedback>
             {item.hint.hintMedia[0].mediaType === 'image' ?
             <Image 
               source={{ uri: item.hint.hintMedia[0].mediaUrl }} 
-              style={[styles.productImage, {height: ITEM_HEIGHT * 0.92}]}
+              style={[styles.productImage, {height: ITEM_HEIGHT}]}
               resizeMode="cover"
             />
           :
-        //  item.hint.hintMedia[0].mediaType === 'video' 
             
               <VideoItem currentHint={item} ITEM_HEIGHT={ITEM_HEIGHT} />
            
           }
-                   </TouchableWithoutFeedback>
 
           </TouchableOpacity>
           
 
-            <View style={[styles.headerContainer, {paddingTop: insets.top + 30}]}>
+            <TouchableOpacity style={[styles.headerContainer, {paddingTop: insets.top + 30}]}
+              onPress={handleHeaderPress}
+            >
               <View style={styles.locationHeader}>
-                <Text style={styles.headerLocationText}>Montreal</Text>
-                <Entypo name="chevron-down" size={24} color="white" />
+              <Text style={styles.headerLocationText}>{location?.city || "Loading..."}</Text>
+              <Entypo name="chevron-down" size={24} color="white" />
               </View>
               <Text style={styles.headerBrandText}>{item.product.productBrandTitle}</Text>
-            </View>
+            </TouchableOpacity>
         
-         
-          {/* Action Buttons (similar to TikTok) */}
-          {/* <View style={styles.actionsContainer}>
-            <TouchableOpacity style={styles.actionButton}>
-              <View style={styles.actionIconContainer}>
-                <Text style={styles.actionIcon}>❤️</Text>
+
+            <View style={styles.actionsContainer}>
+                        {/* product/topic */}
+
+
+                        {/* <ProductPreview item={item}/> */}
+                    
+
+
+                        {/* dot - for go to start*/}
+
+                        {/* <TouchableOpacity 
+                        style={styles.startBeginningDotContainer}
+                        onPress={() => console.log('Go to start')}
+                        
+                        >
+                          <View style={styles.startBeginningDot}/>
+                        </TouchableOpacity> */}
+
+                        {/* vertical seek */}
+
+                        {/* love - start only with love */}
+
+              
+              
               </View>
-              <Text style={styles.actionText}>Like</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.actionButton}>
-              <View style={styles.actionIconContainer}>
-                <Text style={styles.actionIcon}>💬</Text>
-              </View>
-              <Text style={styles.actionText}>Comment</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.actionButton}>
-              <View style={styles.actionIconContainer}>
-                <Text style={styles.actionIcon}>🔖</Text>
-              </View>
-              <Text style={styles.actionText}>Save</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.actionButton}>
-              <View style={styles.actionIconContainer}>
-                <Text style={styles.actionIcon}>↗️</Text>
-              </View>
-              <Text style={styles.actionText}>Share</Text>
-            </TouchableOpacity>
-          </View> */}
+          
+    
           
           {/* Product Information Section */}
-          <TouchableOpacity style={[styles.infoContainer, {bottom: ITEM_HEIGHT * 0.12 - 40}]}
+          {/* <TouchableOpacity style={[styles.infoContainer, {bottom: insets.bottom}]}
             
-          onPress={() => navigation.navigate('Product')}
           >
             <Image
               source={{ uri: item.user?.userAvatar }}
@@ -117,7 +161,8 @@ function HintItem({ item }: HintItemProps) {
                 <Text style={styles.title}>{item.hint.hintTitle}</Text>
 
                 <View style={styles.rightSide}>
-                <Text style={styles.price}>${item.product.productDollarPrice}.{item.product.productCentPrice}</Text>
+                <Text style={styles.lastBoughtText}>4 mins ago</Text>
+
                 <Entypo name="chevron-right" size={24} color="white" />
                 </View>
 
@@ -126,14 +171,13 @@ function HintItem({ item }: HintItemProps) {
               <View style={styles.bottomArea}>
                 
                 <Text style={styles.userTitleText}>{item.user?.firstName} {item.user?.lastName}</Text>
-                <Text style={styles.lastBoughtText}>4 mins ago</Text>
               </View>
 
             </View>
 
             
           
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           
       
         </View>
@@ -264,7 +308,7 @@ const styles = StyleSheet.create({
   actionsContainer: {
     position: 'absolute',
     right: 16,
-    bottom: 100,
+    bottom: 130,
     alignItems: 'center',
   },
   actionButton: {
@@ -312,6 +356,25 @@ const styles = StyleSheet.create({
   headerBrandText: {
     color: 'white',
     fontSize: 21,
+  },
+
+  startBeginningDotContainer: {
+    width: 40,
+    height: 40,
+    marginTop: 5,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+
+  startBeginningDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'white',
+    marginTop: 15,
+    marginBottom: 10,
   },
 
 

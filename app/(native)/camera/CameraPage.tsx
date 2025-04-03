@@ -1,5 +1,5 @@
 import React, { useRef, useState, useMemo, useCallback, useEffect} from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { Camera } from 'react-native-vision-camera'
 import Reanimated, { useSharedValue, useAnimatedProps, useAnimatedGestureHandler, interpolate, Extrapolate } from 'react-native-reanimated'
 import { useIsFocused } from '@react-navigation/core'
@@ -15,7 +15,18 @@ import IonIcon from 'react-native-vector-icons/Ionicons'
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 
 
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+
+import {Feather} from '@expo/vector-icons';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import { useCreateBrand } from '../../../src/hooks/useCreateBrand';
+
+import Svg, { Circle, Defs, Mask, Rect } from 'react-native-svg'
+import MaskedView from '@react-native-masked-view/masked-view'
+
 
 const { width, height } = Dimensions.get('window')
 import { useRouter } from 'expo-router';
@@ -28,7 +39,7 @@ import {
     useLocationPermission,
     useMicrophonePermission,
   } from 'react-native-vision-camera'
-  import { CONTENT_SPACING, CONTROL_BUTTON_SIZE, MAX_ZOOM_FACTOR, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from './Constants'
+  import { CAPTURE_BUTTON_SIZE, CONTENT_SPACING, CONTROL_BUTTON_SIZE, MAX_ZOOM_FACTOR, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from './Constants'
   import type { CameraProps, CameraRuntimeError, PhotoFile, VideoFile } from 'react-native-vision-camera'
   import type { NativeStackScreenProps } from '@react-navigation/native-stack'
   import type { Routes } from './Routes'
@@ -49,10 +60,13 @@ function CameraPage({navigation}: Props) {
     const microphone = useMicrophonePermission()
     const location = useLocationPermission()
 
-    const insets = useSafeAreaInsets()
- 
+    const {isCreatingBrand, setIsCreatingBrand, setBrandCurrentStep, currentBrandStep,
+      brandLogoUri,
+      setBrandLogoUri,
 
-    const router = useRouter();
+    } = useCreateBrand();
+
+    const insets = useSafeAreaInsets()    
 
     const zoom = useSharedValue(1)
     const isPressingButton = useSharedValue(false)
@@ -88,7 +102,7 @@ function CameraPage({navigation}: Props) {
     ])
     
     const CAMERA_WIDTH = SCREEN_WIDTH
-    const CAMERA_AVAILABLE_HEIGHT = (height - insets.bottom) * 0.92
+    const CAMERA_AVAILABLE_HEIGHT = height
     const CAMERA_HEIGHT = CAMERA_AVAILABLE_HEIGHT// Height is 16/9 times the width
 
 
@@ -159,6 +173,10 @@ function CameraPage({navigation}: Props) {
     }, [onFlipCameraPressed])
     //#endregion
 
+    const handleUpload = () => {
+       pickImage();
+    }
+
     //#region Effects
     useEffect(() => {
         // Reset zoom to it's default everytime the `device` changes.
@@ -210,6 +228,32 @@ function CameraPage({navigation}: Props) {
       const handleClose = async () => {
         //navigation.navigate('index');
       }
+
+      const [image, setImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1], // square crop for circular result
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
+      // Optional: Resize or further process
+      const manipulated = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 500, height: 500 } }], // Ensure square shape
+        { compress: 0.9, format: ImageManipulator.SaveFormat.PNG }
+      );
+
+      setImage(manipulated.uri);
+      console.log("mani", manipulated.uri);
+      setBrandLogoUri(manipulated.uri);
+      // You can now upload `manipulated.uri`
+    }
+  };
       
       return (
         <View style={styles.container}>
@@ -257,6 +301,57 @@ function CameraPage({navigation}: Props) {
             </View>
           )}
     
+ 
+
+
+          {isCreatingBrand && currentBrandStep === 0 && (
+            <View style={[styles.addBrandLogoTitle, {marginTop: insets.top}]}>
+              <Text style={styles.addBrandLogoText}>1. Add Brand Logo</Text>
+            </View>
+          )}
+
+
+
+          {isCreatingBrand && currentBrandStep === 0 && (
+          <View style={StyleSheet.absoluteFill} pointerEvents='none'>
+          <Svg
+            width={SCREEN_WIDTH}
+            height={SCREEN_HEIGHT}
+            style={{ position: 'absolute' }}
+          >
+            <Defs>
+              <Mask id="mask" x="0" y="0" width="100%" height="100%">
+                {/* Full opaque background */}
+                <Rect
+                  x="0"
+                  y="0"
+                  width={SCREEN_WIDTH}
+                  height={SCREEN_HEIGHT}
+                  fill="white"
+                />
+                {/* Transparent circle hole */}
+                <Circle
+                  cx={SCREEN_WIDTH / 2}
+                  cy={SCREEN_HEIGHT / 2}
+                  r={150}
+                  fill="black"
+                />
+              </Mask>
+            </Defs>
+        
+            {/* Background with mask applied */}
+            <Rect
+              x="0"
+              y="0"
+              width={SCREEN_WIDTH}
+              height={SCREEN_HEIGHT}
+              fill="rgba(0, 0, 0, 0.7)"
+              mask="url(#mask)"
+            />
+          </Svg>
+        </View>
+          )}
+          
           <CaptureButton
             style={styles.captureButton}
             camera={camera}
@@ -268,15 +363,13 @@ function CameraPage({navigation}: Props) {
             enabled={isCameraInitialized && isActive}
             setIsPressingButton={setIsPressingButton}
           />
-
-          
     
     
           <View style={styles.rightButtonRow}>
             <PressableOpacity style={styles.button} onPress={onFlipCameraPressed} disabledOpacity={0.4}>
               <IonIcon name="camera-reverse" color="white" size={24} />
             </PressableOpacity>
-            {supportsFlash && (
+            {/* {supportsFlash && (
               <PressableOpacity style={styles.button} onPress={onFlashPressed} disabledOpacity={0.4}>
                 <IonIcon name={flash === 'on' ? 'flash' : 'flash-off'} color="white" size={24} />
               </PressableOpacity>
@@ -295,13 +388,25 @@ function CameraPage({navigation}: Props) {
               <PressableOpacity style={styles.button} onPress={() => setEnableNightMode(!enableNightMode)} disabledOpacity={0.4}>
                 <IonIcon name={enableNightMode ? 'moon' : 'moon-outline'} color="white" size={24} />
               </PressableOpacity>
-            )}
-            <PressableOpacity style={styles.button} onPress={() => navigation.navigate('Devices')}>
+            )} */}
+
+
+
+            {/* <PressableOpacity style={styles.button} onPress={() => navigation.navigate('Devices')}>
               <IonIcon name="settings-outline" color="white" size={24} />
             </PressableOpacity>
             <PressableOpacity style={styles.button} onPress={() => navigation.navigate('CodeScannerPage')}>
               <IonIcon name="qr-code-outline" color="white" size={24} />
-            </PressableOpacity>
+            </PressableOpacity> */}
+
+            {isCreatingBrand && currentBrandStep === 0 && (
+            
+            <View style={styles.button}>
+            <TouchableOpacity onPress={handleUpload}>
+              <Feather name="upload" size={22} color="white"  />
+            </TouchableOpacity>
+            </View>
+          )}
           </View>
         </View>
       )
@@ -316,8 +421,9 @@ function CameraPage({navigation}: Props) {
       captureButton: {
         position: 'absolute',
         alignSelf: 'center',
-        bottom: SAFE_AREA_PADDING.paddingBottom,
+        bottom: 115,
       },
+ 
       button: {
         marginBottom: CONTENT_SPACING,
         width: CONTROL_BUTTON_SIZE,
@@ -348,6 +454,22 @@ function CameraPage({navigation}: Props) {
         justifyContent: 'center',
         alignItems: 'center',
       },
+
+      addBrandLogoTitle: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 1,
+      },
+
+      addBrandLogoText: { 
+        fontSize: 20, 
+        fontWeight: 'bold', 
+        textAlign: 'center', 
+        color: 'white' 
+      },
+
+
     })
     
 

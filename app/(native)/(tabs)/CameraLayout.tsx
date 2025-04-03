@@ -1,11 +1,11 @@
 import { NavigationContainer } from '@react-navigation/native'
 import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import {PermissionsPage} from './PermissionsPage'
-import CameraPage from './CameraPage'
+import {PermissionsPage} from '../camera/PermissionsPage'
+import CameraPage from '../camera/CameraPage'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { StyleSheet } from 'react-native'
-import {MediaPage} from './MediaPage'
+import {MediaPage} from '../camera/MediaPage'
 import { View, Text, Dimensions } from 'react-native';
 
 import type { CameraProps, CameraRuntimeError, PhotoFile, VideoFile } from 'react-native-vision-camera'
@@ -30,7 +30,7 @@ function CameraLayout(props: any) {
     const cameraPermission = Camera.getCameraPermissionStatus()
     const microphonePermission = Camera.getMicrophonePermissionStatus()
     const insets = useSafeAreaInsets()
-    const CAMERA_HEIGHT = (height - insets.bottom) * 0.12 - 40
+    const CAMERA_HEIGHT = height
 
     console.log(`Re-rendering Navigator. Camera: ${cameraPermission} | Microphone: ${microphonePermission}`)
   

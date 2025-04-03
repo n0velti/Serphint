@@ -1,4 +1,4 @@
-package com.eanuichi.serphint
+package com.eanuichi.Serphint
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

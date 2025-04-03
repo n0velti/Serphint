@@ -7,7 +7,7 @@ import {
     type OnSeekData,
 } from 'react-native-video';
 import SeekBar from '../SeekBar/SeekBar';
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type HintOverlayProps = {
     currentHint: ProductData;
     HINT_HEIGHT: number;
@@ -22,6 +22,8 @@ type HintOverlayProps = {
 };
 
 const _HintOverlay = forwardRef<VideoRef, HintOverlayProps>((props, ref) => {
+
+    const insets = useSafeAreaInsets();
 
     const { 
         currentHint, 
@@ -40,18 +42,18 @@ const _HintOverlay = forwardRef<VideoRef, HintOverlayProps>((props, ref) => {
 
 
     return (
-        <View style={[styles.container, {height: HINT_HEIGHT}]}>
+        <View style={[styles.container, {height: HINT_HEIGHT - insets.bottom}]}>
 
 
             <View style={styles.seekBar}>
-            <SeekBar
+            {/* <SeekBar
                 currentTime={currentTime}
                 duration={duration}
                 videoSeek={prop => videoSeek(prop)}
                 isLoading={isLoading}
                 isUISeeking={isSeeking}
 
-            />
+            /> */}
             </View>
         </View>
     );

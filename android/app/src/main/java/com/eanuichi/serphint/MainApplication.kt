@@ -1,4 +1,4 @@
-package com.eanuichi.serphint
+package com.eanuichi.Serphint
 
 import android.app.Application
 import android.content.res.Configuration

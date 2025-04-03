@@ -1,31 +1,36 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { DATA } from '../../SampleData';
-import { ProductData } from '../../src/types/types';
-import HintItem from '../../src/components/common/HintItem/HintItem';
-
-import {useResponsive} from '../../src/hooks/useResponsive';
+import { DATA } from '../../../SampleData';
+import { ProductData } from '../../../src/types/types';
+import HintItem from '../../../src/components/common/HintItem/HintItem';
+import { useRoute } from '@react-navigation/native';
+import {useResponsive} from '../../../src/hooks/useResponsive';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Product from '../../../src/components/native/Product/Product';
+import { useLocalSearchParams } from 'expo-router';
+import { useHint } from '../../../src/contexts/HintContext';
 
-interface SerphintProps {
-  // Add any props you need
-  currentHint: ProductData;
-  setCurrentHint: (hint: ProductData) => void;
-}
+type SerphintProps = {
+    currentHint: ProductData; 
+    setCurrentHint: (hint: ProductData) => void;
+
+};
 
 
-
-function Serphint(props: SerphintProps) {
+function Serphint(props: any) {
     const insets = useSafeAreaInsets();
     const {height, width} = useResponsive();
-    const ITEM_HEIGHT = height - insets.bottom;
+    const ITEM_HEIGHT = height
 
-    const { currentHint, setCurrentHint } = props;
+    const route = useRoute();
 
+    const {setCurrentHint, currentHint} = useHint();
     
 
+
+  
   const onViewableItemsChanged = React.useCallback(({ viewableItems }: any) => {
     // Log the viewable items
     const item : ProductData = viewableItems[0].item;
@@ -36,7 +41,9 @@ function Serphint(props: SerphintProps) {
     <View style={styles.container}>
       <FlashList
         data={DATA}
-        renderItem={({ item }: { item: ProductData }) => (
+        renderItem={({ item }: { 
+          item: ProductData 
+        }) => (
           // Pass the entire item (ProductData) instead of just item.hint
           <HintItem item={item} />
         )}
@@ -50,7 +57,9 @@ function Serphint(props: SerphintProps) {
         contentContainerStyle={styles.listContent}
         onViewableItemsChanged={onViewableItemsChanged}
         
+        
       />
+       
     </View>
   );
 }

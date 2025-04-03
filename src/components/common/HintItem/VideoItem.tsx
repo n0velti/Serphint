@@ -37,7 +37,7 @@ function VideoItem({currentHint, ITEM_HEIGHT}: VideoItemProps) {
 
     const videoRef = useRef<VideoRef>(null);
 
-    const HINT_HEIGHT = ITEM_HEIGHT * 0.92;
+
 
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
@@ -188,7 +188,7 @@ function VideoItem({currentHint, ITEM_HEIGHT}: VideoItemProps) {
       <>
         <Video
         source={{ uri: currentHint.hint.hintMedia[0].mediaUrl }}
-        style={[styles.productImage, {height: HINT_HEIGHT}]}
+        style={[styles.productImage, {height: ITEM_HEIGHT}]}
         resizeMode="cover"
         ref={videoRef}
         onLoad={onLoad}
@@ -217,7 +217,7 @@ function VideoItem({currentHint, ITEM_HEIGHT}: VideoItemProps) {
 
         <HintOverlay 
         currentHint={currentHint} 
-        HINT_HEIGHT={HINT_HEIGHT} 
+        HINT_HEIGHT={ITEM_HEIGHT} 
         
         currentTime={currentTime}
         duration={duration}

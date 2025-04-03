@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-east-1_01wR753Yo",
+    "user_pool_id": "us-east-1_Wtq1SeNwB",
     "aws_region": "us-east-1",
-    "user_pool_client_id": "60savkh6tce43cj3ui3tbgqeag",
-    "identity_pool_id": "us-east-1:4bdb02d3-c59c-4084-aacc-3a2a3e195d9b",
+    "user_pool_client_id": "65htfkgn4tp4k0ci5edv3nh5ia",
+    "identity_pool_id": "us-east-1:a86f8a55-b615-4780-abc7-9e0ad2c66753",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -26,7 +26,7 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://732wodrs2nhkditmsvgm3jm33u.appsync-api.us-east-1.amazonaws.com/graphql",
+    "url": "https://7uplboj6q5hxxfstrtm4yaop3a.appsync-api.us-east-1.amazonaws.com/graphql",
     "aws_region": "us-east-1",
     "default_authorization_type": "AWS_IAM",
     "authorization_types": [
@@ -45,6 +45,13 @@
               "isRequired": true,
               "attributes": []
             },
+            "brandLogoUri": {
+              "name": "brandLogoUri",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
             "brandName": {
               "name": "brandName",
               "isArray": false,
@@ -52,12 +59,26 @@
               "isRequired": false,
               "attributes": []
             },
+            "isFranchiseLocation": {
+              "name": "isFranchiseLocation",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": false,
+              "attributes": []
+            },
             "brandLocation": {
               "name": "brandLocation",
               "isArray": false,
               "type": {
-                "nonModel": "Location"
+                "nonModel": "BrandBrandLocation"
               },
+              "isRequired": false,
+              "attributes": []
+            },
+            "hideExactLocation": {
+              "name": "hideExactLocation",
+              "isArray": false,
+              "type": "Boolean",
               "isRequired": false,
               "attributes": []
             },
@@ -106,13 +127,6 @@
                   "hintBrandId"
                 ]
               }
-            },
-            "brandLogoUri": {
-              "name": "brandLogoUri",
-              "isArray": false,
-              "type": "String",
-              "isRequired": false,
-              "attributes": []
             },
             "createdAt": {
               "name": "createdAt",
@@ -677,36 +691,22 @@
               "isRequired": true,
               "attributes": []
             },
+            "state": {
+              "name": "state",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "province": {
+              "name": "province",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
             "country": {
               "name": "country",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "postalCode": {
-              "name": "postalCode",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "fullAddress": {
-              "name": "fullAddress",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "displayAddress": {
-              "name": "displayAddress",
-              "isArray": false,
-              "type": "String",
-              "isRequired": true,
-              "attributes": []
-            },
-            "street": {
-              "name": "street",
               "isArray": false,
               "type": "String",
               "isRequired": true,
@@ -723,6 +723,41 @@
               "name": "longitude",
               "isArray": false,
               "type": "Float",
+              "isRequired": true,
+              "attributes": []
+            },
+            "streetNumber": {
+              "name": "streetNumber",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "streetName": {
+              "name": "streetName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "postalCode": {
+              "name": "postalCode",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "miniDisplayName": {
+              "name": "miniDisplayName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "fullDisplayName": {
+              "name": "fullDisplayName",
+              "isArray": false,
+              "type": "String",
               "isRequired": true,
               "attributes": []
             }
@@ -743,6 +778,88 @@
               "isArray": false,
               "type": "String",
               "isRequired": true,
+              "attributes": []
+            }
+          }
+        },
+        "BrandBrandLocation": {
+          "name": "BrandBrandLocation",
+          "fields": {
+            "city": {
+              "name": "city",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "state": {
+              "name": "state",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "province": {
+              "name": "province",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "country": {
+              "name": "country",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "latitude": {
+              "name": "latitude",
+              "isArray": false,
+              "type": "Float",
+              "isRequired": false,
+              "attributes": []
+            },
+            "longitude": {
+              "name": "longitude",
+              "isArray": false,
+              "type": "Float",
+              "isRequired": false,
+              "attributes": []
+            },
+            "streetNumber": {
+              "name": "streetNumber",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "streetName": {
+              "name": "streetName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "postalCode": {
+              "name": "postalCode",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "miniDisplayName": {
+              "name": "miniDisplayName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "fullDisplayName": {
+              "name": "fullDisplayName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
               "attributes": []
             }
           }

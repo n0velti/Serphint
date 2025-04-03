@@ -7,19 +7,33 @@ export interface ButtonWithIcon {
   isActive: boolean;
 }
 
-export interface ProductLocation {
+export interface Location {
   city: string;
-  state: string;
+  state?: string;
+  province?: string;
   country: string;
   latitude: number;
   longitude: number;
   streetNumber: string;
   streetName: string;
-  zipCode: string;
+  postalCode: string;
+  miniDisplayName: string;
   fullDisplayName: string;
 }
 
+export interface BrandBankAccount {
+  brandid: string;
+  accountHolderName: string;
+  currency: string;
+  country: string;  
+  accountNumber: string;
+  accountType: string;
+  bankName: string;
+  routingNumber: string;
+}
+
 export interface ProductMedia {
+  id: string;
   mediaType: "image" | "video";
   mediaUrl: string;
 }
@@ -29,7 +43,7 @@ export interface Product {
   productBrandTitle: string;
   productDollarPrice: string;
   productCentPrice: string;
-  productLocation: ProductLocation;
+  productLocation: Location;
   productMedia: ProductMedia[];
 }
 
@@ -44,15 +58,20 @@ export interface Hint {
 export interface User {
   username: string;
   userAvatar: string;
-  userLocation: ProductLocation;
+  userLocation: Location;
   firstName: string;
   lastName: string;
 }
 
 export interface Brand {
-  brandName: string;
-  brandDescription: string;
-  brandLogo: string;
+    brandLogoUri: string;
+    brandName: string
+    isFranchiseLocation: boolean;
+    brandLocation: Location;
+    hideExactLocation: boolean;
+    brandCategory: string[];
+    brandSlogan: string;
+    brandDescription: string;
 }
 
 export interface ProductData {

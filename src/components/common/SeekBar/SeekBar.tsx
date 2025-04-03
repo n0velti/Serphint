@@ -64,8 +64,13 @@ const SeekBar: React.FC<SeekBarProps> = ({ currentTime, duration, isLoading, isU
 
 const styles = StyleSheet.create({
   container: {
-    width: width,
-    height: 10,
+
+    alignContent: "center",
+    
+    alignSelf: "center",
+    width: width /1.3,
+    height: 3,
+    borderRadius: 99,
     backgroundColor: "#ddd",
  
     overflow: "hidden",

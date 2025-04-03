@@ -4,13 +4,16 @@ const schema = a.schema({
 
   Location: a.customType({
       city: a.string().required(),
+      state: a.string(),
+      province: a.string(),
       country: a.string().required(),
-      postalCode: a.string().required(),
-      fullAddress: a.string().required(),
-      displayAddress: a.string().required(),
-      street: a.string().required(),
       latitude: a.float().required(),
       longitude: a.float().required(),
+      streetNumber: a.string().required(),
+      streetName: a.string().required(),
+      postalCode: a.string().required(),
+      miniDisplayName: a.string().required(), 
+      fullDisplayName: a.string().required(),
   }),
 
   Media: a.customType({
@@ -20,13 +23,27 @@ const schema = a.schema({
 
 
   Brand: a.model({
+    brandLogoUri: a.string(), 
     brandName: a.string(),
-    brandLocation: a.ref('Location'),
+    isFranchiseLocation: a.boolean(),
+    brandLocation: a.customType({
+      city: a.string(),
+      state: a.string(),
+      province: a.string(),
+      country: a.string(),
+      latitude: a.float(),
+      longitude: a.float(),
+      streetNumber: a.string(),
+      streetName: a.string(),
+      postalCode: a.string(),
+      miniDisplayName: a.string(),
+      fullDisplayName: a.string(),
+    }),
+    hideExactLocation: a.boolean(),
     brandSlogan: a.string(),
     brandDescription: a.string(),
     brandProducts: a.hasMany('Product', 'productBrandId'),
     brandHints: a.hasMany('Hint', 'hintBrandId'),
-    brandLogoUri: a.string(),
     createdAt: a.string(),
     updatedAt: a.string(),
   })

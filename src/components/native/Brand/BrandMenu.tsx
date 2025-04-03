@@ -4,14 +4,12 @@ import { View, Text, StyleSheet, Image, Dimensions, ImageBackground, TouchableOp
 import BottomSheet from '@gorhom/bottom-sheet';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {ProductData} from '../../types/types';
-
+import { ProductData } from '../../../types/types';
 import Animated, {useAnimatedStyle, interpolate, useSharedValue, useAnimatedScrollHandler, useDerivedValue, runOnJS} from 'react-native-reanimated';
-import { GestureHandlerRootView, PanGestureHandler, Pressable } from 'react-native-gesture-handler';
+import { FlatList, GestureHandlerRootView, PanGestureHandler, Pressable } from 'react-native-gesture-handler';
 import { BlurView } from 'expo-blur';
 
 import { Feather, MaterialCommunityIcons, Ionicons, AntDesign} from '@expo/vector-icons';
-
 
 
 interface BrandMenuProps {
@@ -26,7 +24,12 @@ const BANNER_HEIGHT = height * 0.62;
 
 
 function BrandMenu(props: BrandMenuProps) {
-    const { currentHint, scrollRef, panRef } = props;
+    const { scrollRef, panRef, currentHint } = props;
+
+
+
+
+
     const insets = useSafeAreaInsets();
 
     const AnimatedCoverImage = Animated.createAnimatedComponent(ImageBackground);
@@ -70,13 +73,18 @@ const animatedMenuContainer = useAnimatedStyle(() => {
         ),
     }});
 
+    const updateDebugPosition = useCallback((pos: number) => {
+      setDebugPosition(pos);
+    }, []);
+
     const scrollHandler = useAnimatedScrollHandler({
       onScroll: (event) => {
         scrollOffset.value = event.contentOffset.y;
-      
-        
+    
+        // Send scroll position to JS thread (optional)
+        runOnJS(updateDebugPosition)(event.contentOffset.y);
       }
-  });
+    });
 
    // Function to track BottomSheet position
    const handleAnimate = (fromIndex: number, toIndex: number) => {
@@ -156,21 +164,8 @@ const handleBuyProduct = () => {
 
     const headerComponent = () => {
       return (
-          <View style={styles.headerContainer}>
-
-              <AnimatedPressable style={[styles.buyContainer, animatedBuyContainer]} onPress={handleBuyProduct}>
-              <View style={styles.headerTitle}>
-                        <Text style={styles.headerProductTitle}>{currentHint.product.productTitle}</Text>
-
-                        <View style={styles.productPrice}>
-                            <Text style={styles.productDollar}>$ {currentHint.product.productDollarPrice}</Text>
-                            <Text style={styles.productCent}>{currentHint.product.productCentPrice}</Text>
-                        </View>
-                </View>   
-
-                <Text style={styles.headerProductBrand}>{currentHint.product.productBrandTitle}</Text>
-            
-              </AnimatedPressable>
+       
+       
 
               <Animated.View style={[styles.headerContainer, animatedMenuContainer]}>
                   <AnimatedCoverImage style={[styles.coverHeader, animatedImageHeader]}
@@ -178,17 +173,17 @@ const handleBuyProduct = () => {
                   >
                     <BlurView intensity={10} style={styles.coverHeader}/>
                     <Image
-                      source={{ uri: currentHint.brand.brandLogo}}
+                      source={{ uri: currentHint?.brand.brandLogo}}
                       style={styles.brandLogo}
                     />
                   </AnimatedCoverImage>
 
                   <View style={styles.footer}>
                     <View style={styles.topFooter}>
-                      <Text style={styles.headerTitle}>{currentHint.brand.brandName}</Text>
+                      <Text style={styles.headerTitle}>{currentHint?.brand.brandName}</Text>
                       <AntDesign name="infocirlce" size={16} color="white" />
                     </View>
-                    <Text style={styles.description} numberOfLines={2}>{currentHint.brand.brandDescription}</Text>
+                    <Text style={styles.description} numberOfLines={2}>{currentHint?.brand.brandDescription}</Text>
                     <View style={styles.bottomFooter}>
 
                     <TouchableOpacity style={styles.actionButton}>
@@ -222,7 +217,7 @@ const handleBuyProduct = () => {
                   </View>
               </Animated.View>
                           
-          </View>
+      
       );
   }
 
@@ -231,37 +226,20 @@ const handleBuyProduct = () => {
     // Ensure we're rendering the component no matter what
     // This helps debug if there's an issue with the bottom sheet
     return (
-        <GestureHandlerRootView style={styles.container} 
-        pointerEvents='box-none'
-        >
-            <BottomSheet
-                ref={sheetRef}
-                index={0} 
-                snapPoints={snapPoints}
-                enableDynamicSizing={false}
-                enablePanDownToClose={false}
-                onChange={handleSheetChange}
-                backgroundStyle={styles.bottomSheet}
-                handleComponent={null}
-                simultaneousHandlers={scrollRef}
-                onAnimate={handleAnimate}
-                animatedPosition={bottomSheetPosition}
-            >
+        
 
-                <AnimatedFlatlist
+                <FlatList
                     ref={flatListRef}
                     data={data}
                     keyExtractor={(i) => i}
                     renderItem={renderMenuItem}
                     contentContainerStyle={styles.contentContainer}
-                    scrollEventsHandlersHook={scrollHandler}
                     
                    ListHeaderComponent={headerComponent}
                    showsVerticalScrollIndicator={false}
                 />
                 
-            </BottomSheet>
-        </GestureHandlerRootView>
+         
     );
 }
 
@@ -276,6 +254,7 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         zIndex: 100,
+        backgroundColor: 'red',
 
     },
     headerContainer: {
@@ -283,7 +262,7 @@ const styles = StyleSheet.create({
  
       backgroundColor: 'transparent',
               height: BANNER_HEIGHT,
-        width: width,
+        width: 'width',
         justifyContent: 'center',
         alignItems: 'center',
     },

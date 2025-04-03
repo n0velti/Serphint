@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>serphint</string>
+    <string>Serphint</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>Serphint</string>
-          <string>com.eanuichi.serphint</string>
+          <string>com.eanuichi.Serphint</string>
         </array>
       </dict>
     </array>
@@ -47,6 +47,12 @@
     </dict>
     <key>NSCameraUsageDescription</key>
     <string>Serphint needs access to your camera to create visual hints</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Serphint needs access to your location to provide location-based hints</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Serphint needs access to your location to provide location-based hints</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Serphint needs access to your location to provide location-based hints</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Serphint needs access to your microphone to record audio with your hints</string>
     <key>NSPhotoLibraryAddUsageDescription</key>

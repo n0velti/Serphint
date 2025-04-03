@@ -21,19 +21,31 @@ export const DATA = [
 
           productMedia: [
               {
+                  id: "1",
                   mediaType: "image",
                   mediaUrl: "https://m.media-amazon.com/images/I/81Aty4Ef1WL.jpg"
               },
               {
+                id: "2",
                   mediaType: "image",
                   mediaUrl: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp14-spaceblack-select-202410?wid=904&hei=840&fmt=jpeg&qlt=90&.v=1728916305295"
               },
+              {
+                id: "3",
+                mediaType: "image",
+                mediaUrl: "https://m.media-amazon.com/images/I/81Aty4Ef1WL.jpg"
+            },
+            {
+              id: "4",
+                mediaType: "image",
+                mediaUrl: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp14-spaceblack-select-202410?wid=904&hei=840&fmt=jpeg&qlt=90&.v=1728916305295"
+            },
           ],
       },
 
       user: {
             username: "steve_jobs",
-            userAvatar: "https://www.pngkey.com/png/full/114-1149878_setting-user-avatar-in-specific-size-without-breaking.png",
+            userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D",
             userLocation: {
                 city: "San Francisco",
                 state: "California",

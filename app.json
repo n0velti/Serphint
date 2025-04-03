@@ -11,34 +11,37 @@
       "web"
     ],
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/serphint_icon_red.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/serphint_icon_red.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.eanuichi.Serphint"
+      "bundleIdentifier": "com.eanuichi.Serphint",
+      "icon": "./assets/serphint_icon_red.png",
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/serphint_icon_red.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.eanuichi.Serphint"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/serphint_icon_red.png"
     },
     "plugins": [
       "expo-router",
       [
         "react-native-vision-camera",
         {
-          "cameraPermission": "Allow this app to access your camera"
+          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
+          "enableMicrophonePermission": true,
+          "microphonePermissionText": "$(PRODUCT_NAME) needs access to your Microphone."
         }
       ],
 
@@ -52,6 +55,15 @@
             "useExoplayerHls": false,
             "useExoplayerDash": false
           }
+        }
+      ],
+
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+
+
         }
       ]
     ]
