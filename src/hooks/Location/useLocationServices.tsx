@@ -76,7 +76,7 @@ export const searchPlaces = async (query: string): Promise<CustomLocation[]> => 
                         state: findAddressComponent(details.address_components, 'administrative_area_level_1'),
                         province: findAddressComponent(details.address_components, 'administrative_area_level_1'), // optional redundancy
                         country: findAddressComponent(details.address_components, 'country'),
-                        zipCode: findAddressComponent(details.address_components, 'postal_code'),
+                        postalCode: findAddressComponent(details.address_components, 'postal_code'),
                         latitude: details.geometry.location.lat,
                         longitude: details.geometry.location.lng,
                     };
