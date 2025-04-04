@@ -65,8 +65,6 @@ Hint: a.model({
   hintProductId: a.id(),
   hintProduct: a.belongsTo('Product', 'hintProductId'),
   hintLocation: a.ref('Location'),
-  hintComments: a.hasMany('Comment', 'commentHintId'),
-  hintlikes: a.hasMany('Like', 'likeHintId'),
   hintMedia: a.ref('Media').array(),
   createdAt: a.string(),
   updatedAt: a.string(),
@@ -74,25 +72,7 @@ Hint: a.model({
 .authorization((allow) => [allow.guest()]),
 
 
-Comment: a.model({
-  commentHintId: a.id(),
-  hintComment: a.belongsTo('Hint', 'commentHintId'),
-  content: a.string(),
-  commentParentId: a.string(),
-  commentType: a.string(),
-  createdAt: a.string(),
-  updatedAt: a.string(),
-})
-.authorization((allow) => [allow.guest()]),
 
-Like: a.model({
-  likeHintId: a.id(),
-  likeHint: a.belongsTo('Hint', 'likeHintId'),
-  type: a.string(),
-  createdAt: a.string(),
-  updatedAt: a.string(),
-})
-.authorization((allow) => [allow.guest()]),
 
 
 });
