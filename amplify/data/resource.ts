@@ -72,9 +72,6 @@ Hint: a.model({
 .authorization((allow) => [allow.guest()]),
 
 
-
-
-
 });
 
 export type Schema = ClientSchema<typeof schema>;

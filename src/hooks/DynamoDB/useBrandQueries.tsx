@@ -9,7 +9,7 @@ export const useBrandQueries = () => {
 
     const createBrand = async (brandData: BrandFormData) => {
         try {
-            console.log("Creating brand with data:", brandData.brandLocation);
+            console.log("Creating brand with data:", brandData);
           const brand = await client.models.Brand.create(brandData);
             console.log("Brand created successfully:", brand);
           return brand;
