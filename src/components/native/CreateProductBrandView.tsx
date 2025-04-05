@@ -15,7 +15,7 @@ import {BrandBankAccount, Location} from '../../types/types';
 
 import { Alert } from 'react-native';
 
-import { useBrandQueries } from '../../hooks/DynamoDB/useBrandQueries';
+import { useBrandQueries } from '../../hooks/DynamoDB/useDataBrandQueries';
 import { BrandFormData } from '../../schemas/BrandFormSchema';
 
 type CreateProductBrandViewProps = {

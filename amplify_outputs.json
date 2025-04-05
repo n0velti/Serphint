@@ -577,5 +577,32 @@
       }
     }
   },
+  "storage": {
+    "aws_region": "us-east-1",
+    "bucket_name": "amplify-serphint-edward-s-serphintbrandmediabucket-qjuaweouobvb",
+    "buckets": [
+      {
+        "name": "SerphintBrandMedia",
+        "bucket_name": "amplify-serphint-edward-s-serphintbrandmediabucket-qjuaweouobvb",
+        "aws_region": "us-east-1",
+        "paths": {
+          "media/images/*": {
+            "guest": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ],
+            "authenticated": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          }
+        }
+      }
+    ]
+  },
   "version": "1.3"
 }
