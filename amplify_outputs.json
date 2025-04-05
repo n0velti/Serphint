@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-east-1_Wtq1SeNwB",
+    "user_pool_id": "us-east-1_Xagtc0p3Q",
     "aws_region": "us-east-1",
-    "user_pool_client_id": "65htfkgn4tp4k0ci5edv3nh5ia",
-    "identity_pool_id": "us-east-1:a86f8a55-b615-4780-abc7-9e0ad2c66753",
+    "user_pool_client_id": "4jfjotinj8nemrgo328act92fj",
+    "identity_pool_id": "us-east-1:98efaffc-4050-422b-a394-5c08d844d742",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -26,7 +26,7 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://7uplboj6q5hxxfstrtm4yaop3a.appsync-api.us-east-1.amazonaws.com/graphql",
+    "url": "https://mgk6yymncja5nfbsqskdrv76iu.appsync-api.us-east-1.amazonaws.com/graphql",
     "aws_region": "us-east-1",
     "default_authorization_type": "AWS_IAM",
     "authorization_types": [
@@ -579,11 +579,11 @@
   },
   "storage": {
     "aws_region": "us-east-1",
-    "bucket_name": "amplify-serphint-edward-s-serphintbrandmediabucket-qjuaweouobvb",
+    "bucket_name": "amplify-d1tym1ofhj26cq-ma-serphintbrandmediabucket-xxvjluuil3fe",
     "buckets": [
       {
         "name": "SerphintBrandMedia",
-        "bucket_name": "amplify-serphint-edward-s-serphintbrandmediabucket-qjuaweouobvb",
+        "bucket_name": "amplify-d1tym1ofhj26cq-ma-serphintbrandmediabucket-xxvjluuil3fe",
         "aws_region": "us-east-1",
         "paths": {
           "media/images/*": {
