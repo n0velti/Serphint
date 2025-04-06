@@ -17,9 +17,14 @@ export const useBrandQueries = () => {
 
           console.log("Brand created:", brand);
 
-          //const brandImageUri = uploadBrandImage(brandData.brandLogoUri, brand.id);
+          const brandImageUri = await uploadBrandImage(brandData.brandLogoUri, brand.data?.id);
+
+          const response = await client.models.Brand.update({
+            id: brand.data?.id,
+            brandLogoUri: brandImageUri,
+          });
       
-          return brand;
+          return response.data;
         } catch (error) {
           console.error("Error creating brand:", error);
           throw error;
