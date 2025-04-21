@@ -46,7 +46,7 @@ export default function RootLayout() {
         <NavBar/>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="[productId]/[userId]" options={{ headerShown: false }} />
+          <Stack.Screen name="[productId]" options={{ headerShown: false }} />
           <Stack.Screen name="[userId]/CreateAnAccount" options={{ headerShown: false }} />
           <Stack.Screen name="[userId]/SignIn" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />

@@ -15,7 +15,7 @@ function NavBar(props: NavBarProps) {
                 <Link 
                 style={{ fontSize: 20, fontWeight: 'bold' }}
                 href={{ pathname: '/', params: {} }}>
-                    Dr.Brew
+                    Serphint
                 </Link>
 
                 <View style={styles.searchContainer}>

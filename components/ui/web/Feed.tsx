@@ -28,9 +28,10 @@ function Feed(props: FeedProps) {
             style={styles.sampleItem}
 
             href={{ 
-                pathname: '/[productId]/[userId]', 
-                params: { productId: item.product.id, userId: item.user.id } 
+                pathname: '[productId]/[postId]', 
+                params: { productId: item.product.id, postId: item.id } 
             }}
+            
         >
             <View style={styles.sampleDataLeftContainer}>
             
