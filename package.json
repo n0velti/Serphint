@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "export": "expo export --dev --clear --output-dir dist"
+    "export": "npx expo export --dev --clear --output-dir dist"
   },
   "jest": {
     "preset": "jest-expo"
