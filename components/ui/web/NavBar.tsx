@@ -1,13 +1,27 @@
 import { Link } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Text, View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
+
+import { Ionicons } from '@expo/vector-icons';
+
+import { useAuthProvider } from '@/hooks/auth/useAuthProvider';
+
 type NavBarProps = {
+    setIsMenuOpen: (isOpen: boolean) => void;
+    isMenuOpen: boolean;
+
 };
 
-function NavBar(props: NavBarProps) {
+function NavBar({setIsMenuOpen, isMenuOpen}: NavBarProps) {
+
+    const { user, fetchUser } = useAuthProvider();
+
+    console.log('user', user);
+
+
     return (
         <View style={styles.container}>
 
@@ -31,6 +45,25 @@ function NavBar(props: NavBarProps) {
             </View>
 
             <View style={styles.navBarRightContainer}>
+
+                {user ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 30 }}>
+                    <TouchableOpacity>
+                        <Ionicons name="create-outline" size={24} color="blue" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.menuBtn} onPress={() => setIsMenuOpen(!isMenuOpen)}>
+                        <Feather name="menu" size={18} color="black" />
+                        <Image
+                            source={{ uri: '' }}
+                            style={{ width: 28, height: 28, borderRadius: 8, marginLeft: 10, backgroundColor: 'red' }}
+                        />
+                    </TouchableOpacity>
+
+
+                    </View>
+                ) : (
+                
+                <>
                 <Link 
                 style={styles.createAccountButton}
                 href={{ 
@@ -40,16 +73,22 @@ function NavBar(props: NavBarProps) {
                 >
                     <Text style={styles.createAccountText}>Create An Account</Text>
                 </Link>
+
                 <Link 
                 style={styles.signInButton}
                 href={{ 
                     pathname: '/SignIn'
                 }}
+                
                 >
                     <Text style={styles.signInText}>Sign In</Text>
                 </Link>
-            </View>
 
+                </>
+            
+                )}
+                
+            </View>
          
         </View>
     );
@@ -62,7 +101,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'white',
         paddingVertical: 10,
         paddingHorizontal: 30,
         borderBottomWidth: 1,
@@ -134,5 +173,14 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         fontSize: 13,
     },
+    menuBtn:{
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 12,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: '#ccc',
+    }
 
 });
