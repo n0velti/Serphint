@@ -34,8 +34,7 @@ function NavBar(props: NavBarProps) {
                 <Link 
                 style={styles.createAccountButton}
                 href={{ 
-                    pathname: '/[userId]/CreateAnAccount', 
-                    params: { userId: '0' } 
+                    pathname: '/CreateAnAccount'
                 }}
                 
                 >
@@ -44,8 +43,7 @@ function NavBar(props: NavBarProps) {
                 <Link 
                 style={styles.signInButton}
                 href={{ 
-                    pathname: '/[userId]/SignIn', 
-                    params: { userId: '0' } 
+                    pathname: '/SignIn'
                 }}
                 >
                     <Text style={styles.signInText}>Sign In</Text>

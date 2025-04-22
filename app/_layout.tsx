@@ -14,6 +14,11 @@ import { usePlatform } from '@/hooks/usePlatform';
 
 import NavBar from '@/components/ui/web/NavBar';
 
+import { Amplify } from "aws-amplify"
+import outputs from "../amplify_outputs.json"
+
+Amplify.configure(outputs)
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -49,8 +54,8 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="[productId]" options={{ headerShown: false }} />
-          <Stack.Screen name="[userId]/CreateAnAccount" options={{ headerShown: false }} />
-          <Stack.Screen name="[userId]/SignIn" options={{ headerShown: false }} />
+          <Stack.Screen name="/CreateAnAccount" options={{ headerShown: false }} />
+          <Stack.Screen name="/SignIn" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
