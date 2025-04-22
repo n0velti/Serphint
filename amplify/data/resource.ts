@@ -1,17 +1,109 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
-and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.guest()]),
+
+  Media: a.customType({
+    mediaType: a.string().required(),
+    mediaUri: a.string().required(),
+  }),
+
+  User: a.model({
+    userFirstName: a.string(),
+    userLastName: a.string(),
+    userEmail: a.string().required(),
+    userPhoneNumber: a.string().required(),
+    userAvatarUri: a.string(),
+
+    userPost: a.hasMany('Post', 'postUserId'),
+    userComment: a.hasMany('Comment', 'commentUserId'),
+    userLike: a.hasMany('Like', 'likeUserId'),
+    userDislike: a.hasMany('Dislike', 'dislikeUserId'),
+  })
+  .authorization((allow) => [allow.guest()]),
+
+
+Product: a.model({
+  productName: a.string(),
+  productDescription: a.string(),
+  productDollarFigureCost: a.float(), 
+  productCentFigureCost: a.float(), 
+  productBaseCurrency: a.string(),
+  productDollarTotalCost: a.float(),
+  productCentTotalCost: a.float(), 
+  productMedia: a.ref('Media').array(),
+
+  productPost: a.hasMany('Post', 'postProductId'),
+  productComment: a.hasMany('Comment', 'commentProductId'),
+
+
+  createdAt: a.string(),
+  updatedAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+Post: a.model({
+  postTitle: a.string(),
+  postDescription: a.string(),
+  postComments: a.hasMany('Comment', 'commentPostId'),
+  postLikes: a.hasMany('Like', 'likeTargetId'),
+  postDislikes: a.hasMany('Dislike', 'dislikeTargetId'),
+  postProductId: a.id(), // Link post to a product 
+  postProduct: a.belongsTo('Product', 'postProductId'),
+  postUserId: a.id(), // Link post to the user
+  postUser: a.belongsTo('User', 'postUserId'),
+  postMedia: a.ref('Media').array(),
+  createdAt: a.string(),
+  updatedAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+Comment: a.model({
+  commentPostId: a.id().required(), // Link comment to a post
+  commentPost: a.belongsTo('Post', 'commentPostId'),
+  commentProductId: a.id(), // Link comment to a product
+  commentProduct: a.belongsTo('Product', 'commentProductId'),
+  commentUserId: a.id(), // Link comment to the user
+  commentUser: a.belongsTo('User', 'commentUserId'),
+  commentLikes: a.hasMany('Like', 'likeTargetId'),
+  commentDislikes: a.hasMany('Dislike', 'dislikeTargetId'),
+  commentMedia: a.ref('Media').array(),
+  userID: a.id().required(), // Link to the user
+  commentText: a.string(),
+  parentCommentID: a.id(), // Null if it's a top-level comment
+  createdAt: a.string(),
+  updatedAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+Like: a.model({
+  likeUserId: a.id(),
+  likeUser: a.belongsTo('User', 'likeUserId'),
+
+  likeTargetId: a.id().required(),
+  likeTarget: a.belongsTo('Post', 'likeTargetId'),// Link to Post
+  likeTargetComment: a.belongsTo('Comment', 'likeTargetId'), // Link to Comment
+
+  targetType: a.string().required(), // "post" or "comment"
+  createdAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+Dislike: a.model({
+  dislikeUserId: a.id(),
+  dislikeUser: a.belongsTo('User', 'dislikeUserId'),
+
+  dislikeTargetId: a.id().required(),
+  dislikeTarget: a.belongsTo('Post', 'dislikeTargetId'), // Link to Post
+  dislikeTargetComment: a.belongsTo('Comment', 'dislikeTargetId'), // Link to Comment
+
+  targetType: a.string().required(), // "post" or "comment"
+  createdAt: a.string(),
+})
+.authorization((allow) => [allow.guest()]),
+
+
+
+
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -23,31 +115,3 @@ export const data = defineData({
   },
 });
 
-/*== STEP 2 ===============================================================
-Go to your frontend source code. From your client-side code, generate a
-Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
-WORK IN THE FRONTEND CODE FILE.)
-
-Using JavaScript or Next.js React Server Components, Middleware, Server 
-Actions or Pages Router? Review how to generate Data clients for those use
-cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
-=========================================================================*/
-
-/*
-"use client"
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-
-const client = generateClient<Schema>() // use this Data client for CRUDL requests
-*/
-
-/*== STEP 3 ===============================================================
-Fetch records from the database and use them in your frontend component.
-(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
-=========================================================================*/
-
-/* For example, in a React component, you can use this snippet in your
-  function's RETURN statement */
-// const { data: todos } = await client.models.Todo.list()
-
-// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>
