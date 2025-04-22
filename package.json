@@ -53,6 +53,7 @@
     "@aws-amplify/backend": "^1.15.0",
     "@aws-amplify/backend-cli": "^1.5.0",
     "@babel/core": "^7.25.2",
+    "@types/aws-lambda": "^8.10.149",
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
