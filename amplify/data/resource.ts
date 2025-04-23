@@ -44,7 +44,7 @@ Product: a.model({
 
   createdAt: a.string(),
   updatedAt: a.string(),
-}).authorization((allow) => [allow.guest(), allow.authenticated()]),
+}).authorization((allow) => [allow.guest(), allow.authenticated().to(['read','create', 'update', 'delete'])]),
 
 Post: a.model({
   
@@ -111,9 +111,10 @@ Dislike: a.model({
 
 
 }).authorization((allow) => [
-  allow.guest(),
-  allow.authenticated(),
-  allow.resource(postConfirmation)
+
+  allow.authenticated().to(['read','create', 'update', 'delete']),
+  allow.resource(postConfirmation),
+  allow.guest().to(['read','create', 'update', 'delete'])
 ]);
 
 export type Schema = ClientSchema<typeof schema>;
@@ -121,7 +122,8 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'userPool',
+    defaultAuthorizationMode: 'iam',
+    
   
   },
 });
