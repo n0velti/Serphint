@@ -8,10 +8,10 @@ export const useProductOperations = () => {
     const getProducts = async () => {
         try {
 
-            const products = await client.models.User.list(
-                {
-                authMode: 'userPool',
-            }
+            const products = await client.models.Product.list(
+            //     {
+            //     authMode: 'userPool',
+            // }
         );
             return products;
         } catch (error) {
