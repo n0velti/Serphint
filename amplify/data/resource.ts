@@ -44,7 +44,13 @@ Product: a.model({
 
   createdAt: a.string(),
   updatedAt: a.string(),
-}).authorization((allow) => [allow.guest(), allow.authenticated()]),
+})
+.authorization((allow) => [
+  allow.ownerDefinedIn('userEmail'),
+  allow.guest(),
+  allow.authenticated(),
+]),
+
 
 Post: a.model({
   

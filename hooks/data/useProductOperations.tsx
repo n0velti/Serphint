@@ -9,9 +9,9 @@ export const useProductOperations = () => {
         try {
 
             const products = await client.models.Product.list(
-            //     {
-            //     authMode: 'userPool',
-            // }
+                {
+                authMode: 'userPool',
+            }
         );
             return products;
         } catch (error) {
