@@ -119,6 +119,7 @@ const PostView = () => {
         renderItem={renderComment}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 80 }}
+        
       />
 
       <View style={styles.commentInputGroup}>

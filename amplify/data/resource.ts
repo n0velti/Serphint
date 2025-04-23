@@ -19,6 +19,7 @@ const schema = a.schema({
     userComment: a.hasMany('Comment', 'commentUserId'),
     userLike: a.hasMany('Like', 'likeUserId'),
     userDislike: a.hasMany('Dislike', 'dislikeUserId'),
+    
   })
   .authorization((allow) => [
     allow.ownerDefinedIn('userEmail'),
@@ -120,7 +121,8 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'iam',
+    defaultAuthorizationMode: 'userPool',
+  
   },
 });
 
