@@ -4,6 +4,9 @@ import { debounce } from 'lodash';
 import {useCreatePostForm} from '@/hooks/data/useCreatePostForm';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
+
+import { useProductOperations } from '@/hooks/data/useProductOperations';
+
 const client = generateClient<Schema>();
 
 type NewPostProps = {
@@ -12,6 +15,8 @@ type NewPostProps = {
 
 
 const NewPost: React.FC<NewPostProps> = () => {
+
+    const { getProducts } = useProductOperations();
 
     
 
@@ -31,21 +36,23 @@ const NewPost: React.FC<NewPostProps> = () => {
 
 
           
-                    const { data: products, errors } = await client.models.Product.list({
-                        filter: {
-                         productName: {
-                            contains: text
-                          }
-                        }
-                      });
+                    // const { data: products, errors } = await client.models.Product.list({
+                    //     filter: {
+                    //      productName: {
+                    //         contains: text
+                    //       }
+                    //     }
+                    //   });
 
-                
+                    console.log('Text input changed:', await getProducts());
+
+
 
                       
-                      console.log('Search results:', products);
-                      console.log('Errors:', errors);
+                    //   console.log('Search results:', products);
+                    //   console.log('Errors:', errors);
                     
-                    setSearchResults(products);
+                    // setSearchResults(products);
                     // setSearchResults(brandsWithLogos);
                     // console.log('Search results:', brandsWithLogos);
             } catch (error) {

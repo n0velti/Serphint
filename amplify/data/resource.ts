@@ -44,7 +44,7 @@ Product: a.model({
 
   createdAt: a.string(),
   updatedAt: a.string(),
-}).authorization((allow) => [allow.guest(), allow.authenticated().to(['read','create', 'update', 'delete'])]),
+}).authorization((allow) => [allow.guest(), allow.authenticated()]),
 
 Post: a.model({
   
@@ -61,7 +61,10 @@ Post: a.model({
   createdAt: a.string(),
   updatedAt: a.string(),
 })
-.authorization((allow) => [allow.guest(), allow.authenticated()]),
+.authorization((allow) => [
+  allow.guest().to(['read']), // <-- allow IAM unauthenticated read
+  allow.authenticated().to(['read', 'create', 'update', 'delete']),
+]),
 
 Comment: a.model({
   commentPostId: a.id().required(), // Link comment to a post
@@ -110,11 +113,12 @@ Dislike: a.model({
 
 
 
-}).authorization((allow) => [
+})
+.authorization((allow) => [
 
-  allow.authenticated().to(['read','create', 'update', 'delete']),
+  allow.authenticated(),
   allow.resource(postConfirmation),
-  allow.guest().to(['read','create', 'update', 'delete'])
+  allow.guest()
 ]);
 
 export type Schema = ClientSchema<typeof schema>;
