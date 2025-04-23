@@ -1,5 +1,15 @@
 import React from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 
 const PostView = () => {
   const [comments, setComments] = React.useState([
@@ -13,8 +23,8 @@ const PostView = () => {
           user: 'User4',
           comment: 'I agree with you!',
           replies: [
-            { id: '1-1-1', user: 'User6', comment: 'Absolutely!' },
-            { id: '1-1-2', user: 'User7', comment: 'Same here!' },
+            { id: '1-1-1', user: 'User6', comment: 'Absolutely!', replies: [] },
+            { id: '1-1-2', user: 'User7', comment: 'Same here!', replies: [] },
           ],
         },
         { id: '1-2', user: 'User5', comment: 'Nice take!', replies: [] },
@@ -24,12 +34,12 @@ const PostView = () => {
       id: '2',
       user: 'User2',
       comment: 'I disagree, but nice try!',
-      replies: [], // Ensure replies is always an array, even if empty
+      replies: [],
     },
   ]);
   const [newComment, setNewComment] = React.useState('');
   const [newReply, setNewReply] = React.useState('');
-  const [replyingTo, setReplyingTo] = React.useState(null);
+  const [replyingTo, setReplyingTo] = React.useState<string | null>(null);
 
   const addComment = () => {
     if (newComment.trim()) {
@@ -41,7 +51,7 @@ const PostView = () => {
     }
   };
 
-  const addReply = (parentId) => {
+  const addReply = (parentId: string) => {
     if (newReply.trim()) {
       const updatedComments = addReplyRecursively(comments, parentId, newReply);
       setComments(updatedComments);
@@ -50,130 +60,151 @@ const PostView = () => {
     }
   };
 
-  const addReplyRecursively = (comments, parentId, replyText) => {
-    return comments.map((comment) => {
-      // Ensure replies is an array
-      if (!comment.replies) {
-        comment.replies = [];
-      }
-
+  const addReplyRecursively = (commentsList, parentId, replyText) => {
+    return commentsList.map((comment) => {
+      if (!comment.replies) comment.replies = [];
       if (comment.id === parentId) {
-        // Push new reply to the replies array
         comment.replies.push({
           id: `${parentId}-${comment.replies.length + 1}`,
           user: 'NewUser',
           comment: replyText,
-          replies: [], // Initialize empty array for replies to this reply
+          replies: [],
         });
-      } else if (comment.replies && comment.replies.length > 0) {
-        // Recurse into replies if not found at current level
+      } else {
         comment.replies = addReplyRecursively(comment.replies, parentId, replyText);
       }
-
       return comment;
     });
   };
 
   const renderComment = ({ item }) => (
-    <View style={styles.commentContainer}>
-      <Text style={styles.userName}>{item.user}</Text>
+    <View style={styles.commentCard}>
+      <Text style={styles.username}>{item.user}</Text>
       <Text style={styles.commentText}>{item.comment}</Text>
+
       <TouchableOpacity onPress={() => setReplyingTo(item.id)}>
-        <Text style={styles.replyText}>Reply</Text>
+        <Text style={styles.replyLink}>Reply</Text>
       </TouchableOpacity>
 
-      {/* Ensure replies exist and render them recursively */}
-      {item.replies && item.replies.length > 0 && (
-        <FlatList
-          data={item.replies}
-          renderItem={renderComment} // Recursively render replies
-          keyExtractor={(reply) => reply.id}
-          style={styles.repliesContainer}
-        />
-      )}
-
       {replyingTo === item.id && (
-        <View style={styles.replyInputContainer}>
+        <View style={styles.replyInputGroup}>
           <TextInput
-            style={styles.input}
             value={newReply}
             onChangeText={setNewReply}
             placeholder="Write a reply..."
+            style={styles.replyInput}
           />
           <Button title="Post Reply" onPress={() => addReply(item.id)} />
         </View>
+      )}
+
+      {item.replies?.length > 0 && (
+        <FlatList
+          data={item.replies}
+          renderItem={renderComment}
+          keyExtractor={(reply) => reply.id}
+          style={styles.repliesList}
+        />
       )}
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <FlatList
         data={comments}
         renderItem={renderComment}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 80 }}
       />
-      <View style={styles.inputContainer}>
+
+      <View style={styles.commentInputGroup}>
         <TextInput
-          style={styles.input}
           value={newComment}
           onChangeText={setNewComment}
-          placeholder="Add a comment"
+          placeholder="Add a comment..."
+          style={styles.commentInput}
         />
         <Button title="Post" onPress={addComment} />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.5,
+    flex: 1,
+    backgroundColor: '#f5f7fa',
+    paddingHorizontal: 16,
     paddingTop: 20,
-    paddingHorizontal: 10,
   },
-  commentContainer: {
+  commentCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 12,
     marginBottom: 10,
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 2,
   },
-  repliesContainer: {
-    marginLeft: 20,
-  },
-  reply: {
-    borderLeftWidth: 2,
-    borderLeftColor: '#ccc',
-    marginLeft: 10,
-    paddingLeft: 10,
-  },
-  userName: {
-    fontWeight: 'bold',
+  username: {
+    fontWeight: '600',
+    color: '#333',
+    fontSize: 14,
+    marginBottom: 4,
   },
   commentText: {
-    marginTop: 5,
-    fontSize: 16,
+    fontSize: 15,
+    color: '#444',
+    marginBottom: 8,
   },
-  replyText: {
-    marginTop: 5,
-    color: '#007bff',
+  replyLink: {
+    color: '#007AFF',
+    fontSize: 14,
+    marginBottom: 8,
   },
-  inputContainer: {
+  replyInputGroup: {
+    marginTop: 10,
+  },
+  replyInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 6,
+    backgroundColor: '#fff',
+  },
+  repliesList: {
+    marginTop: 10,
+    marginLeft: 15,
+  },
+  commentInputGroup: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderColor: '#eee',
   },
-  replyInputContainer: {
-    marginTop: 10,
-    paddingTop: 5,
-  },
-  input: {
+  commentInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
+    borderColor: '#ddd',
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     marginRight: 10,
+    backgroundColor: '#f9f9f9',
   },
 });
 

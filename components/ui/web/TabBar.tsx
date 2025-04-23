@@ -59,12 +59,12 @@ const styles = StyleSheet.create({
     },
     tabContainer: {
       flexDirection: 'row',
-      paddingTop: 10,
-      paddingBottom: 10,
+
  
   
       // ✨ Key changes:
-      margin: 20,
+      marginTop: 5,
+      marginLeft: 20,
       alignSelf: 'flex-start',  
       alignItems: 'center',
       gap: 12, // optional, adds spacing between buttons (RN 0.71+)

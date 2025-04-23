@@ -33,8 +33,8 @@ Product: a.model({
   productDollarFigureCost: a.float(), 
   productCentFigureCost: a.float(), 
   productBaseCurrency: a.string(),
-  productDollarTotalCost: a.float(),
-  productCentTotalCost: a.float(), 
+
+
   productMedia: a.ref('Media').array(),
 
   productPost: a.hasMany('Post', 'postProductId'),
@@ -47,13 +47,14 @@ Product: a.model({
 .authorization((allow) => [allow.guest()]),
 
 Post: a.model({
-  postTitle: a.string(),
-  postDescription: a.string(),
+  
   postComments: a.hasMany('Comment', 'commentPostId'),
   postLikes: a.hasMany('Like', 'likeTargetId'),
   postDislikes: a.hasMany('Dislike', 'dislikeTargetId'),
+  postProductName: a.string(),
   postProductId: a.id(), // Link post to a product 
   postProduct: a.belongsTo('Product', 'postProductId'),
+  postContent: a.string(),
   postUserId: a.id(), // Link post to the user
   postUser: a.belongsTo('User', 'postUserId'),
   postMedia: a.ref('Media').array(),

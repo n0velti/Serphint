@@ -20,6 +20,7 @@ import { useAuthProvider } from '@/hooks/auth/useAuthProvider';
 
 import { Amplify } from "aws-amplify"
 import outputs from "../amplify_outputs.json"
+import SubNavBar from '@/components/ui/web/SubNavBar';
 
 
 Amplify.configure(outputs)
@@ -64,6 +65,8 @@ export default function RootLayout() {
     return (
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <NavBar setIsMenuOpen={setIsMenuOpen} isMenuOpen={isMenuOpen}/>
+
+        <SubNavBar/>
    
         <Stack screenOptions={{headerShown: false,
 
@@ -75,6 +78,8 @@ export default function RootLayout() {
           <Stack.Screen name="[productId]" options={{ headerShown: false }} />
           <Stack.Screen name="/CreateAnAccount" options={{ headerShown: false }} />
           <Stack.Screen name="/SignIn" options={{ headerShown: false }} />
+          <Stack.Screen name="/NewPost" options={{ headerShown: false }} />
+
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

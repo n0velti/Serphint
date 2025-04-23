@@ -17,7 +17,6 @@ function ProductTabsLayout(props) {
             <Tabs.Screen name="[postId]" options={{ headerShown: false, title: 'Post'}} />
             <Tabs.Screen name="Posts" options={{ headerShown: false, title: 'All Posts'}} />
             <Tabs.Screen name="Doctors" options={{ headerShown: false, title: 'Doctors'}} />
-            <Tabs.Screen name="Options" options={{ headerShown: false, title: 'Options'}}
                 
             />
        
