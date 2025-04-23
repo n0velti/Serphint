@@ -14,7 +14,7 @@ Amplify.configure(resourceConfig, libraryOptions);
 const client = generateClient<Schema>();
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
-    console.log("Post confirmation event: ", event);
+  console.log("Post confirmation event: ", event);
   await client.models.User.create({
     userEmail: event.request.userAttributes.email,
     userPhoneNumber: event.request.userAttributes.phone_number,

@@ -20,7 +20,11 @@ const schema = a.schema({
     userLike: a.hasMany('Like', 'likeUserId'),
     userDislike: a.hasMany('Dislike', 'dislikeUserId'),
   })
-  .authorization((allow) => [allow.guest()]),
+  .authorization((allow) => [
+    allow.ownerDefinedIn('userEmail'),
+    allow.guest(),
+    allow.authenticated(),
+  ]),
 
 
 Product: a.model({

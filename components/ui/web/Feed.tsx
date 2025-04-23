@@ -24,7 +24,7 @@ function Feed(props: FeedProps) {
 
         return (
             <Link
-          
+            
             style={styles.sampleItem}
 
             href={{ 
@@ -33,7 +33,8 @@ function Feed(props: FeedProps) {
             }}
             
         >
-            <View style={styles.sampleDataLeftContainer}>
+            <View style={styles.sampleDataLeftContainer}
+            >
             
                 <Image style={styles.productImage} source={{ uri: item.product.coverImage }} />
 
