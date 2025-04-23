@@ -43,8 +43,7 @@ Product: a.model({
 
   createdAt: a.string(),
   updatedAt: a.string(),
-})
-.authorization((allow) => [allow.guest()]),
+}).authorization((allow) => [allow.guest(), allow.authenticated()]),
 
 Post: a.model({
   
@@ -61,7 +60,7 @@ Post: a.model({
   createdAt: a.string(),
   updatedAt: a.string(),
 })
-.authorization((allow) => [allow.guest()]),
+.authorization((allow) => [allow.guest(), allow.authenticated()]),
 
 Comment: a.model({
   commentPostId: a.id().required(), // Link comment to a post

@@ -16,7 +16,7 @@ const NewPost: React.FC<NewPostProps> = () => {
     
 
     const [query, setQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<Location[]>([]);  
+    const [searchResults, setSearchResults] = useState([]);  
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     const { setField, getField } = useCreatePostForm();
@@ -31,18 +31,21 @@ const NewPost: React.FC<NewPostProps> = () => {
 
 
           
-                    const { data } = await client.models.Product.list({
+                    const { data: products, errors } = await client.models.Product.list({
                         filter: {
-                            productName: {
-                            contains: text // Removed toLowerCase() to match exact case
+                         productName: {
+                            contains: text
                           }
                         }
                       });
 
+                
+
                       
-                      console.log('Search results:', data);
+                      console.log('Search results:', products);
+                      console.log('Errors:', errors);
                     
-        
+                    setSearchResults(products);
                     // setSearchResults(brandsWithLogos);
                     // console.log('Search results:', brandsWithLogos);
             } catch (error) {
