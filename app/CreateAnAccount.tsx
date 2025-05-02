@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 import { useCreateAccount } from '@/hooks/auth/useCreateAccountForm';
-import { useCreateAccountOperations } from '@/hooks/S3/useCreateAccountOperations';
+import { useAccountOperations } from '@/hooks/S3/useAccountOperations';
 
 import { signUp, confirmSignUp, autoSignIn, updateUserAttribute } from "aws-amplify/auth"
 import * as ImagePicker from 'expo-image-picker';
@@ -16,8 +16,9 @@ type CreateAnAccountProps = {
 function CreateAnAccount(props: CreateAnAccountProps) {
 
     const [nextStep, setNextStep] = useState({});
+    const [imageBase64, setImageBase64] = useState<any>(null);
 
-    const { uploadProfilePicture } = useCreateAccountOperations();
+    const { uploadProfilePicture } = useAccountOperations();
 
     const {
         setField,
@@ -43,9 +44,14 @@ function CreateAnAccount(props: CreateAnAccountProps) {
         quality: 1,
         allowsEditing: true,
         aspect: [1, 1],
+        base64: true,
         });
 
         if (!result.canceled) {
+            // Convert the image to base64
+            const base64 = result.assets[0].base64;
+            setImageBase64(base64);
+            // Set the image URI in the form
         setField('profilePictureUri', result.assets[0].uri);
         }
     };
@@ -82,29 +88,26 @@ function CreateAnAccount(props: CreateAnAccountProps) {
             // TODO: API call, navigation, etc.
 
 
+            const awsProfilePictureUri = await uploadProfilePicture(imageBase64, result?.data?.profilePictureUri, result.data?.email);
+            console.log('AWS Profile Picture URI:', awsProfilePictureUri);
+
+
             // Upload profile picture if it exists
 
-            const {nextStep, userId } = await signUp({
+            const {nextStep } = await signUp({
                 username: result.data.email,
                 password: result.data.password,
                     attributes: {
                         email: result.data.email,
                         phone_number: result.data.phone_number,
-                        'custom:userName': result.data.userName,
-                        'custom:firstName': result.data.firstName,
-                        'custom:lastName': result.data.lastName,
-                        'custom:profilePictureUri': result.data.profilePictureUri,
+                        preferred_username: result.data.userName,
+                        given_name: result.data.firstName,
+                        family_name: result.data.lastName,
+                        picture: awsProfilePictureUri,
                 
                     },
             })
 
-            const awsProfilePictureUri = await uploadProfilePicture(result?.data?.profilePictureUri, userId);
-
-            const output = await updateUserAttribute({
-                userAttribute: {    
-                    'custom:profilePictureUri': awsProfilePictureUri,
-                },
-            });
 
             setNextStep(nextStep);
 
