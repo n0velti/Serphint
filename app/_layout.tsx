@@ -1,6 +1,5 @@
 //layout.tsx
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -21,6 +20,7 @@ import { useAuthProvider } from '@/hooks/auth/useAuthProvider';
 import { Amplify } from "aws-amplify"
 import outputs from "../amplify_outputs.json"
 import SubNavBar from '@/components/ui/web/SubNavBar';
+import { View, StyleSheet} from 'react-native';
 
 
 Amplify.configure(outputs)
@@ -63,10 +63,10 @@ export default function RootLayout() {
 
   if(platform.isWeb) {
     return (
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <View style={styles.container}>
         <NavBar setIsMenuOpen={setIsMenuOpen} isMenuOpen={isMenuOpen}/>
 
-        <SubNavBar/>
+        {/* <SubNavBar/> */}
    
         <Stack screenOptions={{headerShown: false,
 
@@ -89,7 +89,7 @@ export default function RootLayout() {
           />
 
         )}
-      </ThemeProvider>
+      </View>
     );
   }
 
@@ -103,3 +103,16 @@ export default function RootLayout() {
 
 
 }
+
+const styles = {
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'white',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+};

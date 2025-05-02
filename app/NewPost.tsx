@@ -6,6 +6,9 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 
 import { useProductOperations } from '@/hooks/data/useProductOperations';
+import { usePostOperations } from '@/hooks/data/usePostOperations';
+
+import { getCurrentUser } from 'aws-amplify/auth';
 
 const client = generateClient<Schema>();
 
@@ -16,15 +19,16 @@ type NewPostProps = {
 
 const NewPost: React.FC<NewPostProps> = () => {
 
-    const { getProducts } = useProductOperations();
+    const { getProducts} = useProductOperations();
+    const { createPost } = usePostOperations();
 
-    
+
 
     const [query, setQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);  
     const [showSuggestions, setShowSuggestions] = useState(false);
 
-    const { setField, getField } = useCreatePostForm();
+    const { setField, getField, getForm } = useCreatePostForm();
 
 
 
@@ -32,39 +36,28 @@ const NewPost: React.FC<NewPostProps> = () => {
      const debouncedSearch = React.useRef(
         debounce(async (text: string) => {
             try {
-                console.log('Text input changed:', text);
+                
 
-
-          
-                    // const { data: products, errors } = await client.models.Product.list({
-                    //     filter: {
-                    //      productName: {
-                    //         contains: text
-                    //       }
-                    //     }
-                    //   });
-
-                    console.log('Text input changed:', await getProducts());
-
-
-
-                      
-                    //   console.log('Search results:', products);
-                    //   console.log('Errors:', errors);
-                    
-                    // setSearchResults(products);
-                    // setSearchResults(brandsWithLogos);
-                    // console.log('Search results:', brandsWithLogos);
+                   const products = await getProducts(text);
+                   setSearchResults(products.data);
+              
             } catch (error) {
                 console.error('Error searching places:', error);
             }
         }, 500)
     ).current;
 
+    useEffect(() => {
+      const fetchUser = async () => {
+        const user = await getCurrentUser();
+        console.log("User:", user);
+      }
+      fetchUser();
+    }, []);
+
     // Whenever the query changes, perform the search
     useEffect(() => {
         if (query.length > 0) {
-            console.log('Query:', query);
             debouncedSearch(query);
         } else {
             setSearchResults([]);
@@ -79,11 +72,22 @@ const NewPost: React.FC<NewPostProps> = () => {
       };
 
 
-      const handleLocationPress = (product) => {
-        setQuery(product);
+      const handleProductPress = (product) => {
+        console.log('Selected Product:', product);
+        setQuery(product.productName);
         setShowSuggestions(false);
-        setField("postProductName", product);
+        setField("postProductName", product.productName);
+        setField("postProductId", product.id);
       };
+
+      const handleSubmitPress = async () => {
+        setField("postUserId", (await getCurrentUser()).userId)
+        console.log('Form Data:', getForm());
+        const formData = getForm();
+        const result = await createPost(formData)
+
+        console.log('Post created successfully:', result);
+      }
 
   return (
     <View style={styles.container}>
@@ -103,10 +107,10 @@ const NewPost: React.FC<NewPostProps> = () => {
            {showSuggestions && searchResults.length > 0 && (
                     <FlatList
                     data={searchResults}
-                    keyExtractor={(item, index) => `${item.postProductName}-${index}`}
+                    keyExtractor={(item, index) => `${item.productName}-${index}`}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => handleLocationPress(item)}>
-                        <Text style={styles.resultItem}>{item.postProductName}</Text>
+                        <TouchableOpacity onPress={() => handleProductPress(item)}>
+                        <Text style={styles.resultItem}>{item.productName}</Text>
                         </TouchableOpacity>
                     )}
                     />
@@ -118,9 +122,10 @@ const NewPost: React.FC<NewPostProps> = () => {
         placeholderTextColor="#999"
         multiline
         numberOfLines={6}
+        onChangeText={(text) => setField("postContent", text)}
       />
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleSubmitPress}>
         <Text style={styles.buttonText}>Submit</Text>
       </TouchableOpacity>
 

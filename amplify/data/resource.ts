@@ -14,6 +14,7 @@ const schema = a.schema({
     userEmail: a.string().required(),
     userPhoneNumber: a.string().required(),
     userAvatarUri: a.string(),
+    userName: a.string(),
 
     userPost: a.hasMany('Post', 'postUserId'),
     userComment: a.hasMany('Comment', 'commentUserId'),

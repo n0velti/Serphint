@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Pressable, Platform } from 'react-native';
 import { FlashList } from "@shopify/flash-list";
 import { Entypo } from '@expo/vector-icons';
@@ -7,40 +7,102 @@ import { Link } from 'expo-router';
 import { SampleData } from "@/SampleData";
 import { SampleItem } from '@/constants/Types';
 
+import { usePostOperations } from '@/hooks/data/usePostOperations';
+
 const Feed = () => {
-  const renderItem = ({ item }: { item: SampleItem }) => {
+
+  const {getPosts} = usePostOperations();
+  const [posts, setPosts] = useState();
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const posts = await getPosts();
+        console.log("Fetched posts:", posts.data);
+        setPosts(posts.data);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  const renderItem = ({ item }: { item: any }) => {
+    console.log("Item:", item);
+
+
+    const postCreatedTime = (time: string | number | Date) => {
+      const postDate = new Date(time);
+      const now = new Date();
+    
+      const isSameDay = postDate.toDateString() === now.toDateString();
+    
+      // Yesterday check
+      const yesterday = new Date();
+      yesterday.setDate(now.getDate() - 1);
+      const isYesterday = postDate.toDateString() === yesterday.toDateString();
+    
+      // Start of the week (Monday)
+      const dayOfWeek = now.getDay(); // Sunday = 0
+      const diffToMonday = (dayOfWeek + 6) % 7;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - diffToMonday);
+      monday.setHours(0, 0, 0, 0);
+    
+      if (isSameDay) {
+        // Today → return time
+        return postDate.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      } else if (isYesterday) {
+        return 'Yesterday';
+      } else if (postDate >= monday) {
+        // This week → return weekday
+        return postDate.toLocaleDateString('en-US', { weekday: 'long' });
+      } else {
+        // Older → return date
+        return postDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        });
+      }
+    };
+    
     return (
       <Link
         style={styles.sampleItem}
         href={{
           pathname: '[productId]/[postId]',
-          params: { productId: item.product.id, postId: item.id },
+         // params: { productId: item.product.id, postId: item.id },
         }}
       >
         <View style={styles.sampleDataLeftContainer}>
-          <Image style={styles.productImage} source={{ uri: item.product.coverImage }} />
+          <Image style={styles.productImage} source={{ uri: 'https://images.everydayhealth.com/images/news/finasteride-may-cut-heart-disease-risk-in-men-1440x810.jpg?sfvrsn=62bc7bcc_3' }} />
 
           <View style={styles.postTitle}>
-            <Text style={styles.productNameText}>{item.product.name}</Text>
+            <Text style={styles.productNameText}>{item.postProductName}</Text>
 
             <View style={styles.userInfo}>
-              <Image style={styles.userAvatar} source={{ uri: item.user.avatar }} />
-              <Text style={styles.userName}>{item.user.name}</Text>
+              {/* <Image style={styles.userAvatar} source={{ uri: item.user.avatar }} /> */}
+              <Text style={styles.userName}>{item.postUser?.userEmail}</Text>
             </View>
 
-            <Text style={styles.userComment}>{item.user.comment}</Text>
+            <Text style={styles.userComment}>{item.postContent}</Text>
 
             <View style={styles.postDetails}>
-              <Text style={styles.metaText}>{item.likes} Likes</Text>
-              <Text style={styles.metaText}>{item.dislikes} Dislikes</Text>
-              <Text style={styles.metaText}>{item.comments} Comments</Text>
-              <Text style={styles.metaText}>{item.shares} Shares</Text>
+              <Text style={styles.metaText}>{item.postLikes?.length} Likes</Text>
+              <Text style={styles.metaText}>{item.postDislikes?.length} Dislikes</Text>
+              <Text style={styles.metaText}>{item.postComments?.length} Comments</Text>
+
             </View>
           </View>
         </View>
 
         <View style={styles.sampleDataRightContainer}>
-          <Text style={styles.createdAtText}>{item.createdAt}</Text>
+          <Text style={styles.createdAtText}>{postCreatedTime(item.createdAt)}</Text>
           <Entypo name="chevron-right" size={18} color="#888" />
         </View>
       </Link>
@@ -50,7 +112,7 @@ const Feed = () => {
   return (
     <View style={styles.container}>
       <FlashList
-        data={SampleData}
+        data={posts}
         renderItem={renderItem}
         estimatedItemSize={200}
         scrollEnabled

@@ -13,6 +13,9 @@ type createAccountState = {
     form: Partial<CreateAccountData>;
     setField: (field: keyof CreateAccountData, value: any) => void;
     getField: (name: keyof CreateAccountData) => any;
+
+    setCurrentPage: (page: number) => void;
+    currentPage: number;
     
     validateForm: () => {
         success: boolean;
@@ -38,6 +41,9 @@ export const useCreateAccount = create<createAccountState>((set, get) => ({
         })),
     getField: (name: keyof CreateAccountData) => get().form[name],
 
+    currentPage: 0,
+    setCurrentPage: (page) => set({ currentPage: page }),
+
     validateForm: () => {
         const result = createAccountFormSchema.safeParse(get().form);
         if (result.success) {
@@ -50,5 +56,7 @@ export const useCreateAccount = create<createAccountState>((set, get) => ({
         }
     },
     resetForm: () => set({ form: {} }),
+
+    
 
 }));
