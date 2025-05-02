@@ -2,8 +2,9 @@ import React, {useEffect, useState} from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 import { useCreateAccount } from '@/hooks/auth/useCreateAccountForm';
+import { useCreateAccountOperations } from '@/hooks/S3/useCreateAccountOperations';
 
-import { signUp, confirmSignUp, autoSignIn } from "aws-amplify/auth"
+import { signUp, confirmSignUp, autoSignIn, updateUserAttribute } from "aws-amplify/auth"
 import * as ImagePicker from 'expo-image-picker';
 type CreateAnAccountProps = {
     params: {
@@ -15,6 +16,8 @@ type CreateAnAccountProps = {
 function CreateAnAccount(props: CreateAnAccountProps) {
 
     const [nextStep, setNextStep] = useState({});
+
+    const { uploadProfilePicture } = useCreateAccountOperations();
 
     const {
         setField,
@@ -77,7 +80,11 @@ function CreateAnAccount(props: CreateAnAccountProps) {
         if (result.success) {
             console.log('Form data:', result.data);
             // TODO: API call, navigation, etc.
-            const {nextStep } = await signUp({
+
+
+            // Upload profile picture if it exists
+
+            const {nextStep, userId } = await signUp({
                 username: result.data.email,
                 password: result.data.password,
                     attributes: {
@@ -90,6 +97,14 @@ function CreateAnAccount(props: CreateAnAccountProps) {
                 
                     },
             })
+
+            const awsProfilePictureUri = await uploadProfilePicture(result?.data?.profilePictureUri, userId);
+
+            const output = await updateUserAttribute({
+                userAttribute: {    
+                    'custom:profilePictureUri': awsProfilePictureUri,
+                },
+            });
 
             setNextStep(nextStep);
 
