@@ -9,10 +9,11 @@ const schema = a.schema({
   }),
 
   User: a.model({
-    userFirstName: a.string(),
-    userLastName: a.string(),
+    
     userEmail: a.string().required(),
     userPhoneNumber: a.string().required(),
+    userFirstName: a.string(),
+    userLastName: a.string(),
     userAvatarUri: a.string(),
     userName: a.string(),
 

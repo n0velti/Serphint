@@ -94,10 +94,11 @@ function CreateAnAccount(props: CreateAnAccountProps) {
 
             // Upload profile picture if it exists
 
-            const {nextStep } = await signUp({
+            const {nextStep} = await signUp({
                 username: result.data.email,
                 password: result.data.password,
-                    attributes: {
+                options: {
+                    userAttributes: {
                         email: result.data.email,
                         phone_number: result.data.phone_number,
                         preferred_username: result.data.userName,
@@ -106,6 +107,7 @@ function CreateAnAccount(props: CreateAnAccountProps) {
                         picture: awsProfilePictureUri,
                 
                     },
+                },
             })
 
 
