@@ -25,6 +25,7 @@ const NewPost: React.FC<NewPostProps> = () => {
 
 
     const [query, setQuery] = useState('');
+    const [postTitle, setPostTitle] = useState('');
     const [searchResults, setSearchResults] = useState([]);  
     const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -71,6 +72,11 @@ const NewPost: React.FC<NewPostProps> = () => {
         setField("postProductName", text);
       };
 
+      const handlePostTitleChange = (text: string) => {
+        setPostTitle(text);
+        setField("postTitle", text);
+      }
+
 
       const handleProductPress = (product) => {
         console.log('Selected Product:', product);
@@ -102,6 +108,16 @@ const NewPost: React.FC<NewPostProps> = () => {
             query
         }
       />
+
+    <TextInput
+            style={styles.input}
+            placeholder="Title"
+            placeholderTextColor="#999"
+            onChangeText={handlePostTitleChange}
+            value={
+                postTitle
+            }
+          />
 
            {/* Render search suggestions below input */}
            {showSuggestions && searchResults.length > 0 && (

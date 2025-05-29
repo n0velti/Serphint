@@ -8,28 +8,45 @@ import { SampleData } from "@/SampleData";
 import { SampleItem } from '@/constants/Types';
 
 import { usePostOperations } from '@/hooks/data/usePostOperations';
+import { useAccountOperations } from '@/hooks/S3/useAccountOperations';
 
 const Feed = () => {
 
   const {getPosts} = usePostOperations();
   const [posts, setPosts] = useState();
 
+  const [userProfilePicture, setUserProfilePicture] = useState(null);
+
+  const {getS3ImageUrl} = useAccountOperations();
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const posts = await getPosts();
-        console.log("Fetched posts:", posts.data);
-        setPosts(posts.data);
+        const postsResponse = await getPosts();
+        const postsWithImages = await Promise.all(
+          postsResponse.data.map(async (post: any) => {
+            try {
+              const result = await getS3ImageUrl(post.postUser?.userAvatarUri);
+              return { ...post, profilePictureUrl: result?.href };
+            } catch (e) {
+              console.error("Image fetch failed:", e);
+              return { ...post, profilePictureUrl: null };
+            }
+          })
+        );
+        setPosts(postsWithImages);
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
     };
-
+  
     fetchPosts();
   }, []);
 
   const renderItem = ({ item }: { item: any }) => {
     console.log("Item:", item);
+
+    const profilePictureUrl = item.profilePictureUrl;
 
 
     const postCreatedTime = (time: string | number | Date) => {
@@ -76,7 +93,7 @@ const Feed = () => {
         style={styles.sampleItem}
         href={{
           pathname: '[productId]/[postId]',
-         // params: { productId: item.product.id, postId: item.id },
+         params: { productId: item.postProduct.id, postId: item.id },
         }}
       >
         <View style={styles.sampleDataLeftContainer}>
@@ -86,8 +103,8 @@ const Feed = () => {
             <Text style={styles.productNameText}>{item.postProductName}</Text>
 
             <View style={styles.userInfo}>
-              {/* <Image style={styles.userAvatar} source={{ uri: item.user.avatar }} /> */}
-              <Text style={styles.userName}>{item.postUser?.userEmail}</Text>
+              <Image style={styles.userAvatar} source={{ uri: profilePictureUrl || 'https://via.placeholder.com/150' }} />
+              <Text style={styles.userName}>{item.postUser?.userName}</Text>
             </View>
 
             <Text style={styles.userComment}>{item.postContent}</Text>

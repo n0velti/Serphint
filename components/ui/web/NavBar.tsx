@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Platform, Pressable } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome6, Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthProvider } from '@/hooks/auth/useAuthProvider';
@@ -8,19 +8,66 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 
-
+import { useAccountOperations } from '@/hooks/S3/useAccountOperations';
+import { useLocationServices } from '@/hooks/useLocationServices';
 
 type NavBarProps = {
   setIsMenuOpen: (isOpen: boolean) => void;
   isMenuOpen: boolean;
 };
 
+const navBarButtons = [
+  { name: 'Home', icon: <Entypo name="home" size={18} color="black" />, route: '/' },
+  { name: 'Products and Services', icon: <MaterialIcons name="category" size={18} color="black" />, route: '/ProductsAndServices' },
+  { name: 'Specialists', icon: <FontAwesome6 name="user-doctor" size={18} color="black" />,   route: '/Specialists' },
+  { name: 'Hospitals and Clinics', icon: <MaterialCommunityIcons name="hospital-box" size={18} color="black" />, route: '/HospitalsAndClinics' },
+];
+
 function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
+
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [location, setLocation] = useState(null);
+
+  const { getLocation, getReverseGeocode } = useLocationServices();
   const [fontsLoaded] = useFonts({
     '42dotSans-Bold': require('../../../assets/fonts/42dotSans-Bold.ttf'),
   });
 
+  const [profilePicture, setProfilePicture] = useState(null);
+
+  const {getS3ImageUrl} = useAccountOperations();
+
   const { user } = useAuthProvider();
+
+  useEffect(() => {
+    async function fetchLocation() {
+      const locationCoords = await getLocation();
+      if (!locationCoords) {
+        console.warn('Location not available');
+        return;
+      }
+      const location = await getReverseGeocode(locationCoords.coords.latitude, locationCoords.coords.longitude);
+      if (location) {
+        setLocation(location);
+        console.log('Location fetched:', location);
+      } else {
+        console.warn('Location not found');
+      }
+    }
+    fetchLocation();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserProfilePicture = async () => {
+      if (user) {
+        const profilePictureUrl = await getS3ImageUrl(user.userAttributes.picture);
+        setProfilePicture(profilePictureUrl.href);
+      }
+    }
+    fetchUserProfilePicture();
+
+
+  }, [user]);
 
 
   
@@ -32,24 +79,45 @@ function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
     router.navigate('/NewPost');
   };
 
+
+
   return (
     <View style={styles.container}>
       {/* Left Section */}
-      <View style={styles.header}>
-        <Link href="/" style={styles.logo}>
-          <Text style={styles.logoTextNow}>Now</Text>
-          <Text style={styles.logoTextMed}>Med</Text>
-        </Link>
-      <View style={styles.rightHeader}>
-        <TouchableOpacity>
-        <Ionicons name="notifications-outline" size={24} color="black" />
-        </TouchableOpacity>
 
-        <TouchableOpacity onPress={handlePost}>
-              <Ionicons name="create-outline" size={24} color="#007AFF" />
-        </TouchableOpacity>
+      <View style={styles.header}>
+
+      <View style={styles.topHeader}>
+
+          <View style={styles.leftHeader}>
+
+            <Link href="/" style={styles.logo}>
+              <Text style={styles.logoTextNow}>Now</Text>
+              <Text style={styles.logoTextMed}>Med</Text>
+            </Link>
+
+          </View>
+
+        <View style={styles.rightHeader}>
+
+          <TouchableOpacity>
+            <Ionicons name="notifications-outline" size={18} color="black" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handlePost}>
+                <Ionicons name="create-outline" size={18} color="#007AFF" />
+          </TouchableOpacity>
+
+        </View>
       </View>
+  
+      {/* <TouchableOpacity style={styles.locationBtn}>
+        <Entypo name="location-pin" size={18} color="#0000EE" />
+          <Text style={styles.locationText}>{location ? location?.address_components[3]?.long_name + ", " + location?.address_components[6]?.long_name : 'Loading...'}</Text>
+        </TouchableOpacity> */}
       </View>
+
+
 
       {/* Middle Section */}
 
@@ -68,23 +136,22 @@ function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
 
 
         <View style={styles.subNavBarLeftContainer}>
-                <TouchableOpacity style={styles.subNavBarButton}>
-                <Entypo name="home" size={24} color="black" />
-                    <Text style={styles.subNavBarButtonText}>Home</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.subNavBarButton}>
-                  <MaterialIcons name="category" size={24} color="black" />
-                    <Text style={styles.subNavBarButtonText}>Products and Services</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.subNavBarButton}>
-                <FontAwesome6 name="user-doctor" size={24} color="black" />
-                    <Text style={styles.subNavBarButtonText}>Specialists</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.subNavBarButton}>
-                <MaterialCommunityIcons name="hospital-box" size={24} color="black" />
-                <Text style={styles.subNavBarButtonText}>Hospitals and Clinics</Text>
-                </TouchableOpacity>
+           
+          {navBarButtons.map((button, index) => (
+            <Pressable
+            key={index}
+            style={hoveredIndex === index
+              ? StyleSheet.compose(styles.subNavBarButton, styles.hoveredSubNavBarButton)
+              : styles.subNavBarButton
+            }
+            onPress={() => router.push(button.route)}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
+            {button.icon}
+            <Text style={styles.subNavBarButtonText}>{button.name}</Text>
+          </Pressable>
+          ))}
             </View>
       </View>
 
@@ -116,10 +183,12 @@ function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
             >
               <View style={styles.innerMenu}>
               <Image
-                source={{ uri: '' }}
+                source={{ uri: profilePicture || 'https://via.placeholder.com/150' }}
                 style={styles.userAvatar}
               />
-              <Text style={styles.userName}>{user.signInDetails.loginId}</Text>
+              <Text style={styles.userName}>{user?.userAttributes?.preferred_username}</Text>
+              <Text style={styles.locationText}>{location ? location?.address_components[3]?.long_name + ", " + location?.address_components[6]?.long_name : 'Loading...'}</Text>
+
               </View>
               <Feather name="menu" size={18} color="#000" />
             </TouchableOpacity>
@@ -148,34 +217,42 @@ const styles = StyleSheet.create({
       flexDirection: 'column',
 
   
-      backgroundColor: '#fff',
+      backgroundColor: '#f5f5f7',
       paddingVertical: 12,
-      paddingHorizontal: 24,
-      borderRightColor: '#ddd',
-      borderRightWidth: StyleSheet.hairlineWidth,
+      paddingHorizontal: 4,
+
+
 
     },
     header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '100%',
+      flexDirection: 'column',
+      paddingHorizontal: 24,
+
+      
+   
       paddingVertical: 12,
+    },
+    topHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 6,
     },
     logoTextNow: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: '600',
       color: 'red',
       fontFamily: '42dotSans-Bold',
     },
     logoTextMed: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: '600',
       color: '#000',
     },
   
     midSection: {
       flex: 1,
+      paddingHorizontal: 12,
 
     
       paddingVertical: 12,
@@ -183,6 +260,7 @@ const styles = StyleSheet.create({
     },
 
     footer: {
+      paddingHorizontal: 24,
 
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -208,6 +286,7 @@ const styles = StyleSheet.create({
     },
   
     searchContainer: {
+      marginHorizontal: 12,
       flexDirection: 'row',
       alignItems: 'center',
       borderWidth: 1,
@@ -285,17 +364,24 @@ const styles = StyleSheet.create({
 
     },
     subNavBarButton: {
-      marginRight: 20,
-      fontSize: 16,
-      paddingVertical: 8,
+      paddingHorizontal: 12,
+      fontSize: 13,
+      paddingVertical: 7,
+      borderRadius: 6,
       marginVertical: 4,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 11,
 
     }, 
+    hoveredSubNavBarButton: {
+      backgroundColor: '#ddd',
+      transitionDuration: '0.2s',
+      transitionProperty: 'background-color',
+      transitionTimingFunction: 'ease-in-out',
+    },
     subNavBarButtonText: {
-      fontSize: 16,
+      fontSize: 14,
       color: '#000',
     },
     innerMenu: {
@@ -307,5 +393,24 @@ const styles = StyleSheet.create({
       fontSize: 13,
       fontWeight: '500',
       color: '#000',
+    },
+
+    locationBtn: {
+      paddingVertical: 6,
+
+      flexDirection: 'row',
+      gap: 1,
+      alignItems: 'flex-end',
+    },
+    locationText: {
+      fontSize: 14,
+      color: '#0000EE',
+
+    },
+    leftHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 8,
     },
   });

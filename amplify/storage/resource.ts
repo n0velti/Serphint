@@ -4,7 +4,7 @@ export const nowMedUserStorage = defineStorage({
   name: 'NowMedUserStorage',
   
   access: (allow) => ({
-    'media/images/{entity_id}/*': [
+    'media/*': [
         allow.guest.to(['read', 'write', 'delete']),
         allow.authenticated.to(['read', 'write', 'delete']),
       ],

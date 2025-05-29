@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions} from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import PostView from '@/components/ui/web/Post/PostView';
 import ProductPreview from '@/components/ui/web/Post/ProductPreview';
+import PostViewTwo from '@/components/ui/web/Post/PostViewTwo';
+
 
 
 type ProductProps = {
@@ -12,20 +14,31 @@ type ProductProps = {
     };
 };
 
+const { width, height } = Dimensions.get('window');
+
 function Product(props: ProductProps) {
     const { productId, postId } = useLocalSearchParams();
 
+    console.log('Product ID:', productId);
+    console.log('Post ID:', postId);
+
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
+            <View style={styles.innerContainer}>
 
+                <View style={styles.postView}>
+                    <PostViewTwo postId={postId}/>
+                </View>
 
-            <PostView/>
-            <ProductPreview/>
+                {/* <View style={styles.productView}>
+                    <ProductPreview/>
+                </View> */}
+            </View>
 
-        </View>
+        </ScrollView>
     );
-}
+}   
 
 export default Product;
 
@@ -34,10 +47,30 @@ export default Product;
     container: {
         backgroundColor: 'white',
         flex: 1,
-        paddingHorizontal: 10,
-        flexDirection: 'row',
-        justifyContent: 'center',
         
+        
+    },
+    innerContainer: {
+        flex: 1,
+        flexDirection: 'row',
+     
+        paddingHorizontal: 10,
+        backgroundColor: 'white',
+        justifyContent: 'space-between',
+     
+    },
+    postView: {
+        flex: 1,
+      
+    },
+    productView: {
+   
+         height: height,
+        width: '30%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 10,
+
     },
    
 

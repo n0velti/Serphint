@@ -62,6 +62,7 @@ Post: a.model({
   postProductName: a.string(),
   postProductId: a.id(), // Link post to a product 
   postProduct: a.belongsTo('Product', 'postProductId'),
+  postTitle: a.string(),
   postContent: a.string(),
   postUserId: a.id(), // Link post to the user
   postUser: a.belongsTo('User', 'postUserId'),
@@ -84,16 +85,19 @@ Comment: a.model({
   commentLikes: a.hasMany('Like', 'likeTargetId'),
   commentDislikes: a.hasMany('Dislike', 'dislikeTargetId'),
   commentMedia: a.ref('Media').array(),
-  userID: a.id().required(), // Link to the user
   commentText: a.string(),
   parentCommentID: a.id(), // Null if it's a top-level comment
   createdAt: a.string(),
   updatedAt: a.string(),
 })
-.authorization((allow) => [allow.guest()]),
+.authorization((allow) => [
+  allow.ownerDefinedIn('userEmail'),
+  allow.guest(),
+  allow.authenticated(),
+]),
 
 Like: a.model({
-  likeUserId: a.id(),
+  likeUserId: a.id().required(),
   likeUser: a.belongsTo('User', 'likeUserId'),
 
   likeTargetId: a.id().required(),
@@ -103,10 +107,15 @@ Like: a.model({
   targetType: a.string().required(), // "post" or "comment"
   createdAt: a.string(),
 })
-.authorization((allow) => [allow.guest()]),
+.identifier(['likeTargetId', 'likeUserId', 'targetType'])
+.authorization((allow) => [
+  allow.ownerDefinedIn('userEmail'),
+  allow.guest(),
+  allow.authenticated(),
+]),
 
 Dislike: a.model({
-  dislikeUserId: a.id(),
+  dislikeUserId: a.id().required(),
   dislikeUser: a.belongsTo('User', 'dislikeUserId'),
 
   dislikeTargetId: a.id().required(),
@@ -116,7 +125,12 @@ Dislike: a.model({
   targetType: a.string().required(), // "post" or "comment"
   createdAt: a.string(),
 })
-.authorization((allow) => [allow.guest()]),
+.identifier(['dislikeTargetId', 'dislikeUserId', 'targetType'])
+.authorization((allow) => [
+  allow.ownerDefinedIn('userEmail'),
+  allow.guest(),
+  allow.authenticated(),
+]),
 
 
 

@@ -1,6 +1,6 @@
 // stores/authStore.ts
 import { create } from 'zustand';
-import { getCurrentUser, signOut, signIn} from 'aws-amplify/auth';
+import { getCurrentUser, signOut, signIn, fetchUserAttributes} from 'aws-amplify/auth';
 
 type AuthState = {
   user: any | null;
@@ -19,7 +19,8 @@ export const useAuthProvider = create<AuthState>((set) => ({
     fetchUser: async () => {
       try {
         const currentUser = await getCurrentUser();
-        set({ user: currentUser });
+        const userAttributes = await fetchUserAttributes();
+        set({ user: {currentUser, userAttributes} });
       } catch {
         set({ user: null });
       }

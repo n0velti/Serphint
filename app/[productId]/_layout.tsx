@@ -1,35 +1,33 @@
+// ProductLayout.tsx
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
+import ProductPreview from '@/components/ui/web/Post/ProductPreview';
 
-type ProductLayoutProps = {
-    params: {
-        productId: string;
-    };
-};
+function ProductLayout(props) {
+    const [currentPostTab, setCurrentPostTab] = React.useState('');
+  return (
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }}  initialParams={{ setCurrentPostTab }} // or use context
 
-function ProductLayout(props: ProductLayoutProps) {
-    return (
-        <Stack screenOptions={{
-            headerShown: false,
-        }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
-        </Stack>
-    );
+        />
+      </Stack>
+
+      {/* {currentPostTab !== 'index' && (
+        <View style={styles.productPreview}>
+          <ProductPreview />
+        </View>
+      )} */}
+    </View>
+  );
 }
 
 export default ProductLayout;
 
 const styles = StyleSheet.create({
-    subHeader: {
-        backgroundColor: '#f8f8f8',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginVertical: 10,
-    },
-    subHeaderButton: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#007AFF',
-    },
+  productPreview: {
+    height: '100%',
+    paddingVertical: 20,
+  },
 });

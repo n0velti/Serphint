@@ -1,4 +1,4 @@
-import { uploadData } from '@aws-amplify/storage';
+import { uploadData, getUrl } from '@aws-amplify/storage';
 import { useMedia } from '../useMedia';
 
 import { Buffer } from 'buffer';
@@ -32,6 +32,7 @@ export const useAccountOperations = () => {
         data: fileBuffer,
         options: {
           contentType: getMimeType(fileUri),
+          
         },
       }).result;
 
@@ -44,5 +45,35 @@ export const useAccountOperations = () => {
     }
   };
 
-  return { uploadProfilePicture };
+  const getS3ImageUrl = async (fileUri: string): Promise<URL> => {
+
+    console.log("Fetching S3 image URL...");
+    console.log("File URI:", fileUri);
+    try {
+      const result = await getUrl({
+        path: fileUri,
+        options: {
+          
+          // specify a target bucket using name assigned in Amplify Backend
+            bucket: 'NowMedUserStorage',
+            // ensure object exists before getting url
+            validateObjectExistence: true, 
+            // url expiration time in seconds.
+            expiresIn: 300,
+            // whether to use accelerate endpoint
+            // useAccelerateEndpoint: true,
+            // The account ID that owns the requested bucket.
+            // expectedBucketOwner: '123456789012',
+        },
+      })
+      return result.url;
+    } catch (error) {
+      console.error("Error fetching S3 image URL:", error);
+      throw error;
+    }
+
+  }
+    
+
+  return { uploadProfilePicture, getS3ImageUrl };
 };

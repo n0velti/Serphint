@@ -21,17 +21,39 @@ export const useCommentOperations = () => {
 
     const getComments = async (postId: string) => {
         try {
-            const comments = await client.models.Comment.list(
-                {
-                    authMode: 'userPool' 
-                }
+            const comments = await client.models.Comment.list({
+                authMode: 'userPool' 
+            });
+    
+            console.log('Comments:', comments);
+    
+            const commentData = comments?.data ?? [];
+    
+            const enrichedComments = await Promise.all(
+                commentData.map(async (comment) => {
+                    const [likeResults, dislikeResults, userResults] = await Promise.all([
+                        comment.commentLikes(),
+                        comment.commentDislikes(),
+                        comment.commentUser(),
+                    ]);
+    
+                    return {
+                        ...comment,
+                        commentLikes: likeResults,
+                        commentDislikes: dislikeResults,
+                        commentUser: userResults,
+                    };
+                })
             );
-            return comments;
+
+            console.log('Enriched Comments:', enrichedComments);
+    
+            return enrichedComments;
         } catch (error) {
             console.error('Error fetching comments:', error);
             throw error;
         }
-    }
+    };
 
     return {
         createComment,

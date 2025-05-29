@@ -100,7 +100,7 @@ function CreateAnAccount(props: CreateAnAccountProps) {
                 options: {
                     userAttributes: {
                         email: result.data.email,
-                        phone_number: result.data.phone_number,
+                        phone_number: '+15555555555',
                         preferred_username: result.data.userName,
                         given_name: result.data.firstName,
                         family_name: result.data.lastName,

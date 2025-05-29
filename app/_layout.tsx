@@ -23,6 +23,7 @@ import SubNavBar from '@/components/ui/web/SubNavBar';
 import { View, StyleSheet} from 'react-native';
 
 
+
 Amplify.configure(outputs)
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -35,7 +36,6 @@ export default function RootLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 
-
   useEffect(() => {
     useAuthProvider.getState().fetchUser();
   }, []);
@@ -44,6 +44,8 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  
 
 
   const appInitialized = useMemo(() => {
@@ -63,6 +65,7 @@ export default function RootLayout() {
 
   if(platform.isWeb) {
     return (
+      
       <View style={styles.container}>
         <NavBar setIsMenuOpen={setIsMenuOpen} isMenuOpen={isMenuOpen}/>
 

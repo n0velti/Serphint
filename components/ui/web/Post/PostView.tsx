@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,65 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Image
 } from 'react-native';
 
-const PostView = () => {
+import { usePostOperations } from '@/hooks/data/usePostOperations';
+import { useAccountOperations } from '@/hooks/S3/useAccountOperations';
+import { Ionicons } from '@expo/vector-icons';
+
+type PostViewProps = {
+  postId: string;
+};
+
+const PostView = ({postId}: PostViewProps) => {
+
+  const [post, setPost] = useState({
+    id: postId,
+    title: 'Sample Post Title',
+    content: 'This is the content of the post.',
+  });
+
+  const { getPost, setLike, addComment } = usePostOperations();
+  const {getS3ImageUrl} = useAccountOperations();
+
+
+  useEffect(() => {
+    // Fetch post data based on postId
+
+    if(!postId){
+      console.error("Post ID is not provided");
+      return;
+    }
+
+    console.log("Post ID here:", postId);
+
+    const fetchPost = async () => {
+      // Simulate fetching post data
+
+      try{
+        const fetchedPost = await getPost(postId);
+        const profilePictureUrl = await getS3ImageUrl(fetchedPost.data.postUser?.data.userAvatarUri);
+        setPost({
+          ...fetchedPost.data,
+          profilePictureUrl: profilePictureUrl.href,
+        });
+
+        console.log("Fetched post:", fetchedPost);
+
+      }catch(e){
+        console.error("Error fetching post:", e);
+      }
+     
+    };
+
+    fetchPost();
+  }, [postId]);
+
+
+
+
+
   const [comments, setComments] = React.useState([
     {
       id: '1',
@@ -41,8 +97,24 @@ const PostView = () => {
   const [newReply, setNewReply] = React.useState('');
   const [replyingTo, setReplyingTo] = React.useState<string | null>(null);
 
-  const addComment = () => {
+  const addCommentToPost = async () => {
     if (newComment.trim()) {
+
+      // Call the addComment function from usePostOperations
+
+
+      const commentData = {
+        commentProductId: post.postProduct?.data.id,
+        commentUserId: post.postUser?.data.id,
+        commentText: newComment,
+        parentCommentID: null, // Assuming this is a top-level comment
+      }
+
+
+      const commentResponse = await addComment(post.id, commentData);
+      console.log("Comment response:", commentResponse);
+
+
       setComments([
         ...comments,
         { id: String(comments.length + 1), user: 'NewUser', comment: newComment, replies: [] },
@@ -53,6 +125,17 @@ const PostView = () => {
 
   const addReply = (parentId: string) => {
     if (newReply.trim()) {
+
+      // Call the addComment function from usePostOperations
+      const replyData = {
+        commentProductId: post.postProduct?.data.id,
+        commentUserId: post.postUser?.data.id,
+        commentText: newReply,
+        parentCommentID: parentId,
+      }
+      const replyResponse = addComment(post.id, replyData);
+      console.log("Reply response:", replyResponse);
+
       const updatedComments = addReplyRecursively(comments, parentId, newReply);
       setComments(updatedComments);
       setNewReply('');
@@ -109,11 +192,69 @@ const PostView = () => {
     </View>
   );
 
+  const handleLike = async () => {
+    console.log('Post liked');
+
+    const response = await setLike(post.id, post.postUser?.data.id, 'post');
+    console.log("Like response:", response);
+  }
+  const handleDislike = () => {
+    console.log('Post disliked');
+  }
+  const handleComment = () => {
+    console.log('Commented');
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+
+      <View style={styles.postView}>
+
+          <View style={styles.postUserInfoHeader}>
+              <View style={styles.postUserInfo}>
+                <Image
+                  source={{ uri: post.profilePictureUrl || 'https://via.placeholder.com/150' }}
+                  style={styles.postUserAvatar}
+                />
+                <Text style={styles.username}>{post.postUser?.data?.userName}</Text>
+              </View>
+
+              <View style={styles.postUserInfo}>
+            
+                <Text style={styles.createdAtText}>{post.createdAt}</Text>  
+              </View>
+
+        </View>
+
+
+    
+        
+
+
+
+        <Text style={styles.postTitle}>{post.title}</Text>
+        <Text style={styles.postContent}>{post.postContent}</Text>
+
+        <View style={styles.postDetails}>
+          <TouchableOpacity style={styles.postDetailsButton} onPress={handleLike}>
+            <Ionicons name="heart" size={18} color="black" />
+            <Text style={styles.metaText}>{post.postLikes?.data.length}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.postDetailsButton} onPress={handleDislike}>
+          <Ionicons name="heart-dislike" size={18} color="red" />
+            <Text style={styles.metaText}>{post.postDislikes?.data.length}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.postDetailsButton} onPress={handleComment}>
+          <Ionicons name="chatbubble-ellipses-sharp" size={18} color="black" />
+            <Text style={styles.metaText}>{post.postComments?.data.length}</Text>
+          </TouchableOpacity>
+       
+        </View>
+      </View>
+    
       <FlatList
         data={comments}
         renderItem={renderComment}
@@ -129,7 +270,7 @@ const PostView = () => {
           placeholder="Add a comment..."
           style={styles.commentInput}
         />
-        <Button title="Post" onPress={addComment} />
+        <Button title="Post" onPress={addCommentToPost} />
       </View>
     </KeyboardAvoidingView>
   );
@@ -206,6 +347,64 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginRight: 10,
     backgroundColor: '#f9f9f9',
+  },
+  postView: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  postTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  postContent: {
+    fontSize: 16,
+    color: '#444',
+  },
+  postUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  postUserName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  postUserAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  postUserInfoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  postDetails: {
+    flexDirection: 'row',
+    marginTop: 12,
+    gap: 5,
+  },
+  postDetailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 8,
+  },
+  metaText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: '#555',
   },
 });
 

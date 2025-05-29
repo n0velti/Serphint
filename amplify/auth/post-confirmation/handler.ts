@@ -18,7 +18,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
   await client.models.User.create({
     id: event.request.userAttributes.sub,
     userEmail: event.request.userAttributes.email,
-    userPhoneNumber: '55555555',
+    userPhoneNumber: event.request.userAttributes.phone_number,
     userFirstName: event.request.userAttributes.given_name,
     userLastName: event.request.userAttributes.family_name,
     userAvatarUri: event.request.userAttributes.picture,
