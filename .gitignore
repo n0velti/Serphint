@@ -41,3 +41,6 @@ app-example
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+
+
+.env
