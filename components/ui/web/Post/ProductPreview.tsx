@@ -5,18 +5,10 @@ const {height, width} = Dimensions.get('window');
 const ProductPreview = () => {
   return (
     <View style={styles.container}>
-      <Image
-        source={{
-          uri: 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png',
-        }}
-        style={styles.heroImage}
-      />
-
-
+    
 
       <View style={styles.infoSection}>
 
-      <Text style={styles.productName}>Finasteride</Text>
       <Text style={styles.stockStatus}>In Stock</Text>
 
         <Text style={styles.shippingText}>
@@ -59,22 +51,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     height: height-40,
-    width: 280,
-   
- 
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    paddingLeft: 10,
-    borderLeftColor: '#ddd',
+    width: 300,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#ddd',
+    borderRadius: 12,
 
     marginRight: 20,
   },
-  heroImage: {
-    width: '100%',
-    height: 220,
-    resizeMode: 'cover',
-  },
+
   infoSection: {
-    padding: 16,
+    paddingHorizontal: 16,
     alignItems: 'flex-start',
   },
   price: {

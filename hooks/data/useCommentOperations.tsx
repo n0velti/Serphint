@@ -22,6 +22,9 @@ export const useCommentOperations = () => {
     const getComments = async (postId: string) => {
         try {
             const comments = await client.models.Comment.list({
+                filter: {
+                    commentPostId: { eq: postId }
+                },
                 authMode: 'userPool' 
             });
     

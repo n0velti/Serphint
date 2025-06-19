@@ -104,6 +104,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
+    paddingTop: 55,
+
   },
   card: {
     flexDirection: 'row',

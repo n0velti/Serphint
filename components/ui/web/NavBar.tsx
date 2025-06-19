@@ -3,30 +3,59 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Platform, P
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome6, Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthProvider } from '@/hooks/auth/useAuthProvider';
-import { head } from 'aws-amplify/api';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 
+
+
 import { useAccountOperations } from '@/hooks/S3/useAccountOperations';
 import { useLocationServices } from '@/hooks/useLocationServices';
+import AntDesign from '@expo/vector-icons/AntDesign';
+
 
 type NavBarProps = {
   setIsMenuOpen: (isOpen: boolean) => void;
   isMenuOpen: boolean;
+  navBarCollapsed: boolean;
+  setNavBarCollapsed: (collapsed: boolean) => void;
 };
 
 const navBarButtons = [
-  { name: 'Home', icon: <Entypo name="home" size={18} color="black" />, route: '/' },
-  { name: 'Products and Services', icon: <MaterialIcons name="category" size={18} color="black" />, route: '/ProductsAndServices' },
-  { name: 'Specialists', icon: <FontAwesome6 name="user-doctor" size={18} color="black" />,   route: '/Specialists' },
-  { name: 'Hospitals and Clinics', icon: <MaterialCommunityIcons name="hospital-box" size={18} color="black" />, route: '/HospitalsAndClinics' },
+  { name: 'Home', icon: <Entypo name="home" size={19} color="black" />, route: '/' },
+  { name: 'Products and Services', icon: <MaterialIcons name="category" size={19} color="black" />, route: '/ProductsAndServices' },
+  { name: 'Specialists', icon: <FontAwesome6 name="user-doctor" size={19} color="black" />,   route: '/Specialists' },
+
 ];
 
-function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
+const bottomNavBarButtons = [
+  { name: 'Messages', icon: <Ionicons name="chatbubble-ellipses" size={18} color="black" />, route: '/Messages' },
+  { name: 'Orders & Bookings', icon: <Ionicons name="bag" size={18} color="black" />, route: '/Orders' },
+  { name: 'Profile', icon: null, route: '/Profile' }
+]
+
+const menuItems = [
+  { name: 'View Profile', key: 0,  icon: null, route: '/Profile' },
+  { name: 'Calendar', key: 1,  icon:<AntDesign name="calendar" size={18} color="black" />, route: '/Settings' },
+  { name: 'Settings', key: 2,  icon:<Ionicons name="settings-outline" size={18} color="black" />, route: '/Settings' },
+  { name: 'Log Out', key: 3,  icon: <MaterialIcons name="logout" size={18} color="black" />, route: null},
+  { name: 'Cancel', key: 4,  icon: <MaterialIcons name="cancel" size={18} color="#EA2027" />, route: '/Help' },
+
+
+]
+
+const NAVBAR_WIDTH = Platform.OS === 'web' && 74;
+
+function NavBar({ setIsMenuOpen, isMenuOpen, navBarCollapsed, setNavBarCollapsed }: NavBarProps) {
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [bottomHoveredIndex, setBottomHoveredIndex] = useState<number | null>(null);
+  const [menuHoverIndex, setMenuHoverIndex] = useState<number | null>(null);
+
   const [location, setLocation] = useState(null);
+
+  const { user, signOut } = useAuthProvider();
+
 
   const { getLocation, getReverseGeocode } = useLocationServices();
   const [fontsLoaded] = useFonts({
@@ -37,30 +66,29 @@ function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
 
   const {getS3ImageUrl} = useAccountOperations();
 
-  const { user } = useAuthProvider();
 
-  useEffect(() => {
-    async function fetchLocation() {
-      const locationCoords = await getLocation();
-      if (!locationCoords) {
-        console.warn('Location not available');
-        return;
-      }
-      const location = await getReverseGeocode(locationCoords.coords.latitude, locationCoords.coords.longitude);
-      if (location) {
-        setLocation(location);
-        console.log('Location fetched:', location);
-      } else {
-        console.warn('Location not found');
-      }
-    }
-    fetchLocation();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchLocation() {
+  //     const locationCoords = await getLocation();
+  //     if (!locationCoords) {
+  //       console.warn('Location not available');
+  //       return;
+  //     }
+  //     const location = await getReverseGeocode(locationCoords.coords.latitude, locationCoords.coords.longitude);
+  //     if (location) {
+  //       setLocation(location);
+  //       console.log('Location fetched:', location);
+  //     } else {
+  //       console.warn('Location not found');
+  //     }
+  //   }
+  //   fetchLocation();
+  // }, []);
 
   useEffect(() => {
     const fetchUserProfilePicture = async () => {
       if (user) {
-        const profilePictureUrl = await getS3ImageUrl(user.userAttributes.picture);
+        const profilePictureUrl = await getS3ImageUrl(user.userAttributes?.picture);
         setProfilePicture(profilePictureUrl.href);
       }
     }
@@ -79,14 +107,31 @@ function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
     router.navigate('/NewPost');
   };
 
+  const handleRoutePress = async (item: { route: string; key: number; name: string; icon?: React.ReactNode }) => {
+    if(item.key === 3) {  
+      await signOut();
+      setIsMenuOpen(false); // Close the menu after navigation
+      router.push('/');
+      return;
+    }
+  }
 
 
+  const handleNavigation = (route: string) => {
+    if (route === '/') {
+      setNavBarCollapsed(false);  // Home -> Expand
+    } else {
+      setNavBarCollapsed(false);   // All others -> Collapse (keep FALSE for now)
+    }
+    router.push(route);
+  };
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {width: navBarCollapsed && NAVBAR_WIDTH }]}>
       {/* Left Section */}
 
       <View style={styles.header}>
 
+    {      !navBarCollapsed && (
       <View style={styles.topHeader}>
 
           <View style={styles.leftHeader}>
@@ -99,61 +144,64 @@ function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
           </View>
 
         <View style={styles.rightHeader}>
-
+{/* 
           <TouchableOpacity>
             <Ionicons name="notifications-outline" size={18} color="black" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity onPress={handlePost}>
-                <Ionicons name="create-outline" size={18} color="#007AFF" />
+          <Ionicons name="create-outline" size={19.5} color="black" />
           </TouchableOpacity>
 
         </View>
       </View>
+    )}
   
-      {/* <TouchableOpacity style={styles.locationBtn}>
-        <Entypo name="location-pin" size={18} color="#0000EE" />
-          <Text style={styles.locationText}>{location ? location?.address_components[3]?.long_name + ", " + location?.address_components[6]?.long_name : 'Loading...'}</Text>
-        </TouchableOpacity> */}
+
       </View>
 
 
 
-      {/* Middle Section */}
+      
 
       <View style={styles.midSection}>
+        {!navBarCollapsed && (
         <View style={styles.searchContainer}>
+          
+            <Feather name="search" size={16} color="#555" />
+        
           <TextInput
             style={styles.searchInput}
             placeholder="Search..."
             placeholderTextColor="#888"
+        
           />
-          <TouchableOpacity style={styles.searchButton}>
-            <Feather name="search" size={16} color="#555" />
-          </TouchableOpacity>
+         
         </View>
+        )}
 
 
 
-        <View style={styles.subNavBarLeftContainer}>
-           
-          {navBarButtons.map((button, index) => (
-            <Pressable
-            key={index}
-            style={hoveredIndex === index
-              ? StyleSheet.compose(styles.subNavBarButton, styles.hoveredSubNavBarButton)
-              : styles.subNavBarButton
-            }
-            onPress={() => router.push(button.route)}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
-          >
-            {button.icon}
-            <Text style={styles.subNavBarButtonText}>{button.name}</Text>
-          </Pressable>
-          ))}
-            </View>
+        <View style={[styles.subNavBarLeftContainer, { alignItems: navBarCollapsed ? 'center' : 'flex-start' }]}>
+            {navBarButtons.map((button, index) => (
+              <Pressable
+                key={index}
+                style={hoveredIndex === index
+                  ? StyleSheet.compose(styles.subNavBarButton, styles.hoveredSubNavBarButton)
+                  : styles.subNavBarButton
+                }
+                onPress={() => handleNavigation(button.route)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                {button.icon}
+               <Text style={styles.subNavBarButtonText}>{button.name}</Text>
+              </Pressable>
+            ))}
+          </View>
       </View>
+
+
 
 
       <View style={styles.footer}>
@@ -161,37 +209,121 @@ function NavBar({ setIsMenuOpen, isMenuOpen }: NavBarProps) {
         {user ? (
           <View style={styles.authenticatedContainer}>
 
-              <TouchableOpacity
-              style={styles.subNavBarButton}
-              onPress={() => router.push('/Profile')}
-              >
-              <MaterialCommunityIcons name="message-text" size={24} color="black" />
-              <Text style={styles.subNavBarButtonText}>Messages</Text>
-            </TouchableOpacity>
-          
-            <TouchableOpacity
-              style={styles.subNavBarButton}
-              onPress={() => router.push('/Profile')}
-              >
-              <Ionicons name="bag" size={24} color="black" />
-              <Text style={styles.subNavBarButtonText}>Orders and Bookings</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.menuBtn}
-              onPress={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <View style={styles.innerMenu}>
-              <Image
-                source={{ uri: profilePicture || 'https://via.placeholder.com/150' }}
-                style={styles.userAvatar}
-              />
-              <Text style={styles.userName}>{user?.userAttributes?.preferred_username}</Text>
-              <Text style={styles.locationText}>{location ? location?.address_components[3]?.long_name + ", " + location?.address_components[6]?.long_name : 'Loading...'}</Text>
+                { !isMenuOpen ? (
+                  bottomNavBarButtons.map((button, index) => (
+                    
+                    index !== 2 ? (
+                    <Pressable
+                    key={index}
+                    style={bottomHoveredIndex === index
+                      ? StyleSheet.compose(styles.subNavBarButton, styles.hoveredSubNavBarButton)
+                      : styles.subNavBarButton
+                    }
+                    onPress={() => handleNavigation(button.route)}
+                    onMouseEnter={() => setBottomHoveredIndex(index)}
+                    onMouseLeave={() => setBottomHoveredIndex(null)}
+                  >
+                      {button.icon}
+                      <Text style={styles.subNavBarButtonText}>{button.name}</Text>
+                    </Pressable>
+            
+                  )
+                  : 
+                  
+                  (
+                    <Pressable
+                    key={index}
+                    style={bottomHoveredIndex === index
+                      ? StyleSheet.compose(styles.subNavBarButton, styles.hoveredSubNavBarButton)
+                      : styles.subNavBarButton
+                    }
+                    onPress={() => setIsMenuOpen(!isMenuOpen)}
+                    onMouseEnter={() => setBottomHoveredIndex(index)}
+                    onMouseLeave={() => setBottomHoveredIndex(null)}
+                  >
+                      <View style={styles.innerMenu}>
 
-              </View>
-              <Feather name="menu" size={18} color="#000" />
-            </TouchableOpacity>
+                        <View style={styles.titleArea}>
+                        <Image
+                          source={{ uri: profilePicture || 'https://via.placeholder.com/150' }}
+                          style={styles.userAvatar}
+                        />
+                        <View style={styles.innerTitleArea}>
+                          <Text style={styles.userName}>{user?.userAttributes?.name || 'Profile'}</Text>
+                          {/* <Text style={styles.locationText}>{location ? location?.address_components[3]?.long_name + ", " + location?.address_components[6]?.long_name : 'Loading...'}</Text> */}
+                        </View>
+                        </View>
+                    
+
+
+                        <Entypo name="dots-three-horizontal" size={18} color="black" />
+                      </View>
+                    </Pressable>
+                )
+                  ))
+                ) : (
+
+                  <View style={styles.menuView}>
+                    {
+                      menuItems.map((item, index) => (
+
+                        
+
+
+                        index !== 4 ? (
+                        <Pressable
+                          key={index}
+                          style={menuHoverIndex === index
+                            ? StyleSheet.compose(styles.menuBtn, styles.hoveredSubNavBarButton)
+                            : styles.menuBtn
+                          }
+                          onMouseEnter={() => setMenuHoverIndex(index)}
+                          onMouseLeave={() => setMenuHoverIndex(null)}
+                          onPress={() => handleRoutePress(item)}
+                        >
+                
+
+                          {index === 0 ? (
+                           <Image
+                           source={{ uri: profilePicture || 'https://via.placeholder.com/150' }}
+                           style={styles.userAvatar}
+                         />
+                          ) : (
+                            item.icon && item.icon
+                          )  
+                          }
+                          <Text style={styles.subNavBarButtonText}>{item.name}</Text>
+                        </Pressable>
+                      )
+                        :
+                      (
+                        <Pressable
+                          key={index}
+                          style={menuHoverIndex === index
+                            ? StyleSheet.compose(styles.menuBtnCancel, styles.hoveredSubNavBarButton)
+                            : styles.menuBtnCancel
+                          }
+                          onMouseEnter={() => setMenuHoverIndex(index)}
+                          onMouseLeave={() => setMenuHoverIndex(null)}
+                          onPress={() => {
+                            handleNavigation(item.route);
+                            setIsMenuOpen(false);
+                          }}
+                        >
+                          {item.icon && item.icon}
+                          <Text style={styles.subNavBarButtonTextCancel}>{item.name}</Text>
+                        </Pressable>
+                      )
+                      ))
+                    }
+                
+                  </View>
+
+                 
+                )}
+
+
           </View>
         ) : (
           <View style={styles.authButtons}>
@@ -217,60 +349,59 @@ const styles = StyleSheet.create({
       flexDirection: 'column',
 
   
-      backgroundColor: '#f5f5f7',
-      paddingVertical: 12,
-      paddingHorizontal: 4,
+      backgroundColor: '#fff',
 
+
+
+      borderRightWidth: StyleSheet.hairlineWidth,
+      borderColor: '#ddd',
+      height: '100%',
 
 
     },
     header: {
       flexDirection: 'column',
-      paddingHorizontal: 24,
-
-      
-   
-      paddingVertical: 12,
+      padding: 19,
     },
     topHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 6,
+
     },
     logoTextNow: {
-      fontSize: 18,
+      fontSize: 17.5,
       fontWeight: '600',
-      color: 'red',
+      color: '#EA2027',
       fontFamily: '42dotSans-Bold',
     },
     logoTextMed: {
-      fontSize: 18,
+      fontSize: 17.5,
       fontWeight: '600',
       color: '#000',
     },
   
     midSection: {
       flex: 1,
-      paddingHorizontal: 12,
-
+      
+  
     
-      paddingVertical: 12,
+      
   
     },
 
     footer: {
-      paddingHorizontal: 24,
+      
 
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 12,
-      marginTop: 8,
+      paddingVertical: 18,
+
     },
     rightHeader: {
       flexDirection: 'row',
-      gap: 20,
+   
     },
   
     logo: {
@@ -286,13 +417,15 @@ const styles = StyleSheet.create({
     },
   
     searchContainer: {
-      marginHorizontal: 12,
+      marginTop: 2,
+      marginHorizontal: 18,
       flexDirection: 'row',
       alignItems: 'center',
       borderWidth: 1,
-      borderColor: '#ddd',
-      borderRadius: 8,
-      paddingHorizontal: 10,
+      borderColor: '#f0f0f0',
+      borderRadius: 5,
+      paddingHorizontal: 8,
+      gap: 1,
       backgroundColor: '#f9f9f9',
   
     },
@@ -302,15 +435,12 @@ const styles = StyleSheet.create({
       width: 200,
       fontSize: 14,
     },
-    searchButton: {
-      marginLeft: 4,
-    },
-  
+ 
    
   
     authButtons: {
       flexDirection: 'row',
-      gap: 12,
+      gap: 11,
     },
     createAccountButton: {
       paddingVertical: 8,
@@ -340,6 +470,7 @@ const styles = StyleSheet.create({
     authenticatedContainer: {
       flexDirection: 'column',
       flex: 1,
+      paddingHorizontal: 15,
     },
     menuBtn: {
       
@@ -360,39 +491,65 @@ const styles = StyleSheet.create({
     },
     subNavBarLeftContainer: {
       flexDirection: 'column',
-      marginTop: 20,
+      marginTop: 30,
+      paddingHorizontal : 15,
 
     },
     subNavBarButton: {
-      paddingHorizontal: 12,
-      fontSize: 13,
-      paddingVertical: 7,
+      paddingHorizontal: 10,
+      paddingVertical: 9,
+      
       borderRadius: 6,
-      marginVertical: 4,
+
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 11,
-
-    }, 
+      width: '100%',
+      gap:11,
+      minHeight: 45,
+    },
     hoveredSubNavBarButton: {
-      backgroundColor: '#ddd',
-      transitionDuration: '0.2s',
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+
+      transitionDuration: '0.25s',
       transitionProperty: 'background-color',
+      
       transitionTimingFunction: 'ease-in-out',
+      
     },
     subNavBarButtonText: {
-      fontSize: 14,
+      fontSize: 13,
+      fontFamily: '42dotSans-Bold',
       color: '#000',
+    },
+    subNavBarButtonTextCancel: {
+      fontSize: 13,
+      fontFamily: '42dotSans-Bold',
+      color: '#EA2027',
     },
     innerMenu: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+   
+      justifyContent: 'space-between',
+      width: '100%',
+
+    },
+    titleArea: {
+      flexDirection: 'row',
+      alignItems: 'center',
+ 
     },
     userName: {
       fontSize: 13,
       fontWeight: '500',
       color: '#000',
+
+    },
+    innerTitleArea: {
+      flexDirection: 'column',
+      gap: 2,
+      marginLeft: 8,  
+
     },
 
     locationBtn: {
@@ -413,4 +570,14 @@ const styles = StyleSheet.create({
       alignItems: 'flex-start',
       gap: 8,
     },
+    menuBtnCancel: {
+        
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+  
+      paddingVertical: 4,
+      marginTop: 8,
+      flex: 1,
+    }
   });

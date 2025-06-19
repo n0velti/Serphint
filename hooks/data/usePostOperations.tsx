@@ -101,12 +101,23 @@ export const usePostOperations = () => {
                 post?.data?.postDislikes(),
                 post?.data?.postComments(),
             ]);
+
+                // Resolve likeUser for each like
+            const postLikesWithUsers = await Promise.all(
+                (likesResult?.data || []).map(async (like: any) => {
+                    const likeUser = await like.likeUser?.();
+                    return {
+                        ...like,
+                        likeUser
+                    };
+                })
+            );
     
             const enrichedPost = {
                 ...post.data,
                 postProduct: productResult,
                 postUser: userResult,
-                postLikes: likesResult,
+                postLikes: { ...likesResult, data: postLikesWithUsers },
                 postDislikes: dislikesResult,
                 postComments: commentsResult,
             };

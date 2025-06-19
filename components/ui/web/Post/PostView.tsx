@@ -117,7 +117,7 @@ const PostView = ({postId}: PostViewProps) => {
 
       setComments([
         ...comments,
-        { id: String(comments.length + 1), user: 'NewUser', comment: newComment, replies: [] },
+        { id: String(comments?.length + 1), user: 'NewUser', comment: newComment, replies: [] },
       ]);
       setNewComment('');
     }
@@ -148,7 +148,7 @@ const PostView = ({postId}: PostViewProps) => {
       if (!comment.replies) comment.replies = [];
       if (comment.id === parentId) {
         comment.replies.push({
-          id: `${parentId}-${comment.replies.length + 1}`,
+          id: `${parentId}-${comment.replies?.length + 1}`,
           user: 'NewUser',
           comment: replyText,
           replies: [],

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,33 +9,40 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
+  ScrollView,
 } from 'react-native';
 import { formatDistanceToNow } from 'date-fns';
-
-
+import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset, useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
+import { Picker } from '@react-native-picker/picker';
 import { usePostOperations } from '@/hooks/data/usePostOperations';
 import { useAccountOperations } from '@/hooks/S3/useAccountOperations';
 import { Ionicons } from '@expo/vector-icons';
 import { useCommentOperations } from '@/hooks/data/useCommentOperations';
-
-import {useAuthProvider} from '@/hooks/auth/useAuthProvider';
+import { useAuthProvider } from '@/hooks/auth/useAuthProvider';
 import { Entypo } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { FontAwesome6 } from '@expo/vector-icons';
-
 import LiveDot from '@/components/ui/web/LiveDot';
+import { post } from 'aws-amplify/api';
 
 type PostViewProps = {
   postId: string;
-
 };
 
-const PostViewTwo = ({postId}: PostViewProps) => {
+const HEADER_HEIGHT = 200;
+
+const PostViewTwo = ({ postId }: PostViewProps) => {
   const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
   const [commentReactions, setCommentReactions] = useState<Record<string, 'like' | 'dislike' | null>>({});
-  
-  const {user} = useAuthProvider();
+  const { user } = useAuthProvider();
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   const [post, setPost] = useState({
     id: postId,
@@ -43,25 +50,18 @@ const PostViewTwo = ({postId}: PostViewProps) => {
     content: 'This is the content of the post.',
   });
 
-  const { getPost, setLike, setDislike, removeLike, removeDislike,  addComment } = usePostOperations();
-  const {getComments} = useCommentOperations();
-  const {getS3ImageUrl} = useAccountOperations();
-
-
-
- 
+  const { getPost, setLike, setDislike, removeLike, removeDislike, addComment } = usePostOperations();
+  const { getComments } = useCommentOperations();
+  const { getS3ImageUrl } = useAccountOperations();
+  const [contentType, setContentType] = useState('Popular');
+  const [contentTime, setContentTime] = useState('Recent');
 
   useEffect(() => {
-    // Fetch post data based on postId
-
-    console.log("USSER ID:", user);
-
-    if(!postId) return;
+    console.log("USER ID:", user);
+    if (!postId) return;
 
     const fetchPost = async () => {
-      // Simulate fetching post data
-
-      try{
+      try {
         const fetchedPost = await getPost(postId);
         const profilePictureUrl = await getS3ImageUrl(fetchedPost.data.postUser?.data.userAvatarUri);
         setPost({
@@ -69,40 +69,29 @@ const PostViewTwo = ({postId}: PostViewProps) => {
           profilePictureUrl: profilePictureUrl.href,
         });
 
-
         if (fetchedPost?.data) {
-          if(user)
-          {
-          
-          const userId = await user?.currentUser?.userId;
-          console.log("User ID:", userId);
-          
-          const liked = fetchedPost.data.postLikes?.data.some(like => like.likeUserId === userId);
-          const disliked = fetchedPost.data.postDislikes?.data.some(dislike => dislike.dislikeUserId === userId);
-          if (liked) setUserReaction('like');
-          else if (disliked) setUserReaction('dislike');
-
-          console.log("User reaction:", liked, disliked);
+          if (user) {
+            const userId = await user?.currentUser?.userId;
+            console.log("User ID:", userId);
+            const liked = fetchedPost.data.postLikes?.data.some(like => like.likeUserId === userId);
+            const disliked = fetchedPost.data.postDislikes?.data.some(dislike => dislike.dislikeUserId === userId);
+            if (liked) setUserReaction('like');
+            else if (disliked) setUserReaction('dislike');
+            console.log("User reaction:", liked, disliked);
+          }
         }
-      }
-
         console.log("Fetched post:", fetchedPost);
-
-      }catch(e){
+      } catch (e) {
         console.error("Error fetching post:", e);
       }
-     
     };
 
     const fetchComments = async () => {
       try {
         const fetchedComments = await getComments(postId);
         const nested = await nestComments(fetchedComments);
-
-        
-      
         setComments(nested);
-    
+
         if (user) {
           console.log("sersersersers:", user);
           const reactions: Record<string, 'like' | 'dislike' | null> = {};
@@ -124,15 +113,7 @@ const PostViewTwo = ({postId}: PostViewProps) => {
 
     fetchPost();
     fetchComments();
-    
-
-    
   }, [user, postId]);
-
-
-
-
-
 
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -147,14 +128,13 @@ const PostViewTwo = ({postId}: PostViewProps) => {
     id: string;
     parentCommentID?: string | null;
     children?: Comment[];
-    [key: string]: any; // Allow extra fields
+    [key: string]: any;
   };
-  
+
   const nestComments = async (flatComments: Comment[]): Promise<Comment[]> => {
     const commentMap: Record<string, Comment> = {};
     const nestedComments: Comment[] = [];
-  
-    // Map over comments and fetch profile image URIs
+
     const enrichedComments = await Promise.all(
       flatComments.map(async (comment) => {
         const profilePictureUrl = await getS3ImageUrl(comment.commentUser?.data?.userAvatarUri);
@@ -165,13 +145,11 @@ const PostViewTwo = ({postId}: PostViewProps) => {
         };
       })
     );
-  
-    // Populate map
+
     enrichedComments.forEach(comment => {
       commentMap[comment.id] = comment;
     });
-  
-    // Build tree
+
     enrichedComments.forEach(comment => {
       const parentId = comment.parentCommentID;
       if (parentId && commentMap[parentId]) {
@@ -180,21 +158,17 @@ const PostViewTwo = ({postId}: PostViewProps) => {
         nestedComments.push(comment);
       }
     });
-  
+
     return nestedComments;
   };
 
   const addCommentToPost = async () => {
     if (newComment.trim()) {
-
-      // Call the addComment function from usePostOperations
-
-
       const commentData = {
         commentProductId: post.postProduct?.data.id,
         commentUserId: post.postUser?.data.id,
         commentText: newComment,
-        parentCommentID: null, // Assuming this is a top-level comment
+        parentCommentID: null,
       }
 
       setComments((prevComments) => [
@@ -202,22 +176,17 @@ const PostViewTwo = ({postId}: PostViewProps) => {
         ...prevComments,
       ]);
 
-
       const commentResponse = await addComment(post.id, commentData);
       console.log("Comment response:", commentResponse);
-
-
     }
   };
 
-  
   const setCommentLike = async (commentId: string) => {
     const userId = user?.currentUser?.userId;
     if (!userId) return;
-  
+
     const currentReaction = commentReactions[commentId] || null;
-  
-    // Handle async database changes first
+
     if (currentReaction === 'like') {
       await removeLike(commentId, userId, 'comment');
       setCommentReactions(prev => ({ ...prev, [commentId]: null }));
@@ -228,13 +197,11 @@ const PostViewTwo = ({postId}: PostViewProps) => {
       await setLike(commentId, userId, 'comment');
       setCommentReactions(prev => ({ ...prev, [commentId]: 'like' }));
     }
-  
-    // Then update UI state
+
     setComments(prevComments =>
       updateNestedComment(prevComments, commentId, (comment) => {
         const updated = { ...comment };
-  
-        // Remove like
+
         if (currentReaction === 'like') {
           updated.commentLikes = {
             ...updated.commentLikes,
@@ -243,7 +210,6 @@ const PostViewTwo = ({postId}: PostViewProps) => {
             ),
           };
         } else {
-          // Remove dislike if switching
           if (currentReaction === 'dislike') {
             updated.commentDislikes = {
               ...updated.commentDislikes,
@@ -252,8 +218,7 @@ const PostViewTwo = ({postId}: PostViewProps) => {
               ),
             };
           }
-  
-          // Add new like
+
           updated.commentLikes = {
             ...updated.commentLikes,
             data: [
@@ -267,19 +232,29 @@ const PostViewTwo = ({postId}: PostViewProps) => {
             ],
           };
         }
-  
+
         return updated;
       })
     );
   };
 
+  const [showCommentBtn, setShowCommentBtn] = useState(false);
+
+  const newCommentChange = (text: string) => {
+    setNewComment(text);
+    if (text.trim() !== '') {
+      setShowCommentBtn(true);
+    } else {
+      setShowCommentBtn(false);
+    }
+  }
+
   const setCommentDisLike = async (commentId: string) => {
     const userId = user?.currentUser?.userId;
     if (!userId) return;
-  
+
     const currentReaction = commentReactions[commentId] || null;
-  
-    // Handle async DB state
+
     if (currentReaction === 'dislike') {
       await removeDislike(commentId, userId, 'comment');
       setCommentReactions(prev => ({ ...prev, [commentId]: null }));
@@ -290,12 +265,11 @@ const PostViewTwo = ({postId}: PostViewProps) => {
       await setDislike(commentId, userId, 'comment');
       setCommentReactions(prev => ({ ...prev, [commentId]: 'dislike' }));
     }
-  
-    // Update local UI state
+
     setComments(prevComments =>
       updateNestedComment(prevComments, commentId, (comment) => {
         const updated = { ...comment };
-  
+
         if (currentReaction === 'dislike') {
           updated.commentDislikes = {
             ...updated.commentDislikes,
@@ -312,7 +286,7 @@ const PostViewTwo = ({postId}: PostViewProps) => {
               ),
             };
           }
-  
+
           updated.commentDislikes = {
             ...updated.commentDislikes,
             data: [
@@ -326,12 +300,12 @@ const PostViewTwo = ({postId}: PostViewProps) => {
             ],
           };
         }
-  
+
         return updated;
       })
     );
   };
-  
+
   function updateNestedComment(
     comments: Comment[],
     commentId: string,
@@ -339,14 +313,14 @@ const PostViewTwo = ({postId}: PostViewProps) => {
   ): Comment[] {
     return comments.map(comment => {
       if (comment.id === commentId) {
-        return updater({ ...comment }); // update matched comment
-      } else if (comment.children && comment.children.length > 0) {
+        return updater({ ...comment });
+      } else if (comment.children && comment.children?.length > 0) {
         return {
           ...comment,
           children: updateNestedComment(comment.children, commentId, updater),
         };
       }
-      return comment; // unchanged
+      return comment;
     });
   }
 
@@ -358,13 +332,13 @@ const PostViewTwo = ({postId}: PostViewProps) => {
         commentText: newReply,
         parentCommentID: parentId,
       };
-  
+
       const replyResponse = await addComment(post.id, replyData);
       const reply = replyResponse.data;
-  
+
       setComments(prevComments => {
         const updateComments = [...prevComments];
-  
+
         const findAndInsert = (commentsArray) => {
           for (let comment of commentsArray) {
             if (comment.id === parentId) {
@@ -377,64 +351,52 @@ const PostViewTwo = ({postId}: PostViewProps) => {
           }
           return false;
         };
-  
+
         findAndInsert(updateComments);
         return [...updateComments];
       });
-  
+
       setNewReply('');
       setReplyingTo(null);
     }
   };
 
-
   const renderComment = ({ item }) => (
     console.log("Rendering comment:", item),
     console.log("Item:", item),
     <View style={styles.commentCard}>
-      
-   
-      <View style={styles.commentInnerContainer}>
-      <View style={styles.userAvatarContainer}>
-        <Image
-        source={{ uri: item?.profilePictureUrl || 'https://via.placeholder.com/150' }}
-        style={styles.commentAvatar}
-        />
-      </View>
-
-      <View style={styles.commentSection}>
-      <Text style={styles.username}>{item?.commentUser?.data?.userName}</Text>
-
-      <Text style={styles.commentContent}>{item.commentText}</Text>
-
-      <View style={styles.commentOptions}>
-
-        <View style={styles.commentVotingContainer}>
-
-        <TouchableOpacity onPress={() => setCommentLike(item.id)}>
-        <FontAwesome name="thumbs-o-up" size={14} color="black" />
-        </TouchableOpacity>
-
-        <View>
-          <Text style={styles.metaText}>{item?.commentLikes?.data?.length - item?.commentDislikes?.data?.length}</Text>
+      <View style={styles.commentContainer}>
+        <View style={styles.commentAvatarContainer}>
+          <Image
+            source={{ uri: item?.profilePictureUrl || 'https://via.placeholder.com/150' }}
+            style={styles.commentAvatar}
+          />
         </View>
 
-        <TouchableOpacity onPress={() => setCommentDisLike(item.id)}>
-        <FontAwesome name="thumbs-o-down" size={14} color="black" />
-        </TouchableOpacity>
-        </View>
+        <View style={styles.commentContent}>
+          <Text style={styles.commentUsername}>{item?.commentUser?.data?.userName}</Text>
+          <Text style={styles.commentText}>{item.commentText}</Text>
 
-        <TouchableOpacity onPress={() => setReplyingTo(item.id)} style={styles.replyBtn}>
-        <Text style={styles.replyLink}>Reply</Text>
-      </TouchableOpacity>
-        </View>
+          <View style={styles.commentActions}>
+            <View style={styles.commentVoting}>
+              <TouchableOpacity onPress={() => setCommentLike(item.id)} style={styles.voteButton}>
+                <FontAwesome name="thumbs-o-up" size={14} color="#666" />
+              </TouchableOpacity>
+              <Text style={styles.voteCount}>{item?.commentLikes?.data?.length - item?.commentDislikes?.data?.length}</Text>
+              <TouchableOpacity onPress={() => setCommentDisLike(item.id)} style={styles.voteButton}>
+                <FontAwesome name="thumbs-o-down" size={14} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity onPress={() => setReplyingTo(item.id)} style={styles.replyButton}>
+              <Text style={styles.replyText}>Reply</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-        
 
-  
       {replyingTo === item.id && (
-        <View style={styles.replyInputGroup}>
+        <View style={styles.replyInputContainer}>
           <TextInput
             value={newReply}
             onChangeText={setNewReply}
@@ -444,11 +406,11 @@ const PostViewTwo = ({postId}: PostViewProps) => {
           <Button title="Post Reply" onPress={() => addReply(item.id)} />
         </View>
       )}
-  
-      {item.children && item.children.length > 0 && (
-        <View style={styles.repliesList}>
+
+      {item.children && item.children?.length > 0 && (
+        <View style={styles.repliesContainer}>
           {item.children.map(child => (
-            <View key={child.id} style={{ paddingLeft: 20 }}>
+            <View key={child.id} style={styles.nestedComment}>
               {renderComment({ item: child })}
             </View>
           ))}
@@ -457,74 +419,65 @@ const PostViewTwo = ({postId}: PostViewProps) => {
     </View>
   );
 
-
-
-
   const handleLike = async () => {
     if (userReaction === 'like') {
-
       console.log('Post unliked');
-      // Undo like
       setPost(prev => ({
         ...prev,
         postLikes: { data: prev.postLikes.data.filter(l => l.likeUserId !== user.currentUser.userId) },
       }));
       await removeLike(post.id, user.currentUser.userId, 'post');
-   
       setUserReaction(null);
     } else {
       if (userReaction === 'dislike') {
-        // Remove dislike first
         setPost(prev => ({
           ...prev,
           postDislikes: { data: prev.postDislikes.data.filter(d => d.dislikeUserId !== user.currentUser.userId) },
         }));
         await removeDislike(post.id, user.currentUser.userId, 'post');
-     
       }
       setPost(prev => ({
         ...prev,
         postLikes: { data: [...prev.postLikes.data, { likeUserId: user.currentUser.userId }] },
       }));
       await setLike(post.id, user.currentUser.userId, 'post');
-
       setUserReaction('like');
     }
   };
 
   const handleDislike = async () => {
     if (userReaction === 'dislike') {
-      // Undo dislike
       setPost(prev => ({
         ...prev,
         postDislikes: { data: prev.postDislikes.data.filter(d => d.dislikeUserId !== user.currentUser.userId) },
       }));
       await removeDislike(post.id, user.currentUser.userId, 'post');
-    
       setUserReaction(null);
     } else {
       if (userReaction === 'like') {
-        // Remove like first
         setPost(prev => ({
           ...prev,
           postLikes: { data: prev.postLikes.data.filter(l => l.likeUserId !== user.currentUser.userId) },
         }));
         await removeLike(post.id, user.currentUser.userId, 'post');
-     
       }
       setPost(prev => ({
         ...prev,
         postDislikes: { data: [...prev.postDislikes.data, { dislikeUserId: user.currentUser.userId }] },
       }));
       await setDislike(post.id, user.currentUser.userId, 'post');
-      
       setUserReaction('dislike');
     }
   };
 
+  const [showAddComment, setShowAddComment] = useState(false);
 
   const handleComment = () => {
-    console.log('Commented');
+    setShowAddComment(!showAddComment);
+    if (showAddComment) {
+      setNewComment('');
+      setShowCommentBtn(false);
+    }
   }
 
   return (
@@ -532,390 +485,431 @@ const PostViewTwo = ({postId}: PostViewProps) => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-
-      <View style={styles.postView}>
-
-          <View style={styles.postUserInfoHeader}>
-              <View style={styles.postUserInfoLeft}>
-                <Image
-                  source={{ uri: post.profilePictureUrl || 'https://via.placeholder.com/150' }}
-                  style={styles.postUserAvatar}
-                />
+      <View style={styles.postContainer}>
+        <View style={styles.postHeader}>
+          <View style={styles.userInfo}>
+            <Image
+              source={{ uri: post.profilePictureUrl || 'https://via.placeholder.com/150' }}
+              style={styles.userAvatar}
+            />
+            <View style={styles.userDetails}>
+              <View style={styles.userMeta}>
+                <Text style={styles.username}>{post.postUser?.data?.userName}</Text>
+                <Entypo name="dot-single" size={12} color="#999" />
+                <Text style={styles.timestamp}>
+                  {post.createdAt && formatDistanceToNow(new Date(post?.createdAt), { addSuffix: true })}
+                </Text>
               </View>
-
-              <View style={styles.postUserInfoRight}>
-                <View style={styles.postUserInfoTop}>
-              <Text style={styles.username}>{post.postUser?.data?.userName}</Text>
-              <Entypo name="dot-single" size={10} color="#888" />
-              <Text style={styles.createdAtText}>{post.createdAt && formatDistanceToNow(new Date(post?.createdAt), { addSuffix: true })}</Text>  
-
-              </View>
-
-                <Text style={styles.productSubHeader}>Finasteride</Text>  
-              </View>
-
-        </View>
-
-
-    
-        
-
-
-
-        <Text style={styles.postTitle}>
-          {/* {post.title} */}
-          Finasteride Doesn't work at all it is a scam
-        </Text>
-        <Text style={styles.postContent}>{post.postContent}</Text>
-
-        <View style={styles.postDetails}>
-          <View style={styles.votingContainer}>
-          <TouchableOpacity style={styles.postDetailsButton} onPress={handleLike}>
-          <FontAwesome name="thumbs-o-up" size={16} color="black" />
-           </TouchableOpacity>
-
-          <Text style={styles.metaText}>{post.postLikes?.data.length - post.postDislikes?.data.length}</Text>
-
-          <TouchableOpacity style={styles.postDetailsButton} onPress={handleDislike}>
-          <FontAwesome name="thumbs-o-down" size={16} color="black" />
-          </TouchableOpacity>
-          </View>
-          
-          <View style={styles.commentContainer}>
-          <Text style={styles.metaText}>{post.postComments?.data.length}</Text>
-
-          <TouchableOpacity style={styles.postDetailsButton} onPress={handleComment}>
-                      <FontAwesome6 name="comments" size={16} color="black" />
-          </TouchableOpacity>
-          </View>
-
-          <View style={styles.shareContainer}>
-          <Text style={styles.metaText}>12</Text>
-
-          <TouchableOpacity style={styles.postDetailsButton} onPress={handleComment}>
-          <FontAwesome name="share" size={16} color="black" />
-          </TouchableOpacity>
-          </View>
-
-          <View style={styles.viewersContainer}>
-            <LiveDot/>
-
-            <View style={styles.liveViewers}>
-            <Text style={styles.metaTextCount}>12</Text>
-            <Text style={styles.metaTextViews}>Active Viewers</Text>
-
+              <Text style={styles.productTag}>Finasteride</Text>
             </View>
-            {/* <View style={styles.totalViews}>
-              <Text style={styles.metaTextCount}>332</Text>
-              <Text style={styles.metaTextViews}>Total Views</Text>
-            </View> */}
-
           </View>
         </View>
 
-        <View style={styles.commentInputGroup}>
-        <TextInput
-          value={newComment}
-          onChangeText={setNewComment}
-          placeholder="Add a comment..."
-          style={styles.commentInput}
-  
-        />
-        <TouchableOpacity title="Post" style={styles.newCommentBtn} onPress={addCommentToPost}>
-          <Text style={{color: '#fff'}}>Post</Text>
-        </TouchableOpacity>
+        <View style={styles.postBody}>
+          <Text style={styles.postTitle}>Finasteride Doesn't work at all it is a scam</Text>
+          <Text style={styles.postText}>{post.postContent}</Text>
+        </View>
+
+        <View style={styles.likeInfo}>
+          <Text style={styles.likeInfoText}>
+            Liked by{' '}
+            <Text style={styles.likedByUsername}>
+              {post.postLikes?.data?.length > 0 ? post.postLikes?.data[0].likeUser?.data?.userName : ''}
+            </Text>
+            {post.postLikes?.data.length > 1 && (
+              <>
+                {' '}and{' '}
+                <Text style={styles.likedByUsername}>{post.postLikes?.data.length - 1}</Text>
+                {' '}others
+              </>
+            )}
+          </Text>
+        </View>
+
+        <View style={styles.postActions}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
+            <Ionicons 
+              name={userReaction === 'like' ? "heart" : "heart-outline"} 
+              size={20} 
+              color="#333" 
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton} onPress={handleComment}>
+            <Ionicons 
+              name={showAddComment ? "chatbubble" : "chatbubble-outline"} 
+              size={18} 
+              color="#333" 
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="share-outline" size={18} color="#333" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.filterSection}>
+
+          <View style={styles.sortByText}>
+            <Text style={{ fontSize: 14, color: '#333' }}>Sort by:</Text>
+          </View>
+
+          <View style={styles.filterRow}>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={contentType}
+                onValueChange={setContentType}
+                style={styles.picker}
+              >
+                <Picker.Item label="Popular" value="Popular" />
+                <Picker.Item label="Top" value="Top" />
+                <Picker.Item label="Rising" value="Rising" />
+              </Picker>
+            </View>
+
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={contentTime}
+                onValueChange={setContentTime}
+                style={styles.picker}
+              >
+                <Picker.Item label="Recent" value="Recent" />
+                <Picker.Item label="New" value="New" />
+                <Picker.Item label="Last 7 Days" value="Last 7 Days" />
+                <Picker.Item label="Last 30 Days" value="Last 30 Days" />
+                <Picker.Item label="Last 90 Days" value="Last 90 Days" />
+                <Picker.Item label="Last Year" value="Last Year" />
+                <Picker.Item label="All Time" value="All Time" />
+              </Picker>
+            </View>
+
+            <View style={styles.commentInfo}>
+              <Text style={styles.commentCount}>{comments.length} comments</Text>
+            </View>
+          </View>
+        </View>
+
+        {showAddComment && (
+          <View style={styles.commentInputSection}>
+            <TextInput
+              value={newComment}
+              onChangeText={newCommentChange}
+              placeholder="Add a comment..."
+              style={styles.commentInput}
+              multiline
+            />
+            <View style={styles.postCommands}>
+            <TouchableOpacity style={styles.postButton} onPress={addCommentToPost}>
+            <Ionicons name="attach" size={20} color="black" />            </TouchableOpacity>
+            <TouchableOpacity style={styles.postButton} onPress={addCommentToPost}>
+              <Text style={styles.postButtonText}>Post</Text>
+            </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
-      </View>
-    
+
       <FlatList
         data={comments}
         renderItem={renderComment}
         keyExtractor={(item, index) => item.id || index.toString()}
-        contentContainerStyle={{ paddingBottom: 80 }}
-        
+        contentContainerStyle={styles.commentsList}
       />
-
-      {/* <View style={styles.commentInputGroup}>
-        <TextInput
-          value={newComment}
-          onChangeText={setNewComment}
-          placeholder="Add a comment..."
-          style={styles.commentInput}
-        />
-        <Button title="Post" onPress={addCommentToPost} />
-      </View> */}
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  // Main Container
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 55,
+  },
 
+  // Post Styles
+  postContainer: {
+    backgroundColor: '#ffffff',
+
+    paddingVertical: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  commentCard: {
-    marginBottom: 6,
-  
+
+  postHeader: {
+    marginBottom: 12,
   },
+
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  userAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+
+  userDetails: {
+    flex: 1,
+  },
+
+  userMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+
   username: {
-    fontWeight: '600',
-    color: '#333',
-    fontSize: 14,
-
-  },
-  commentText: {
     fontSize: 15,
-    color: '#444',
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+
+  timestamp: {
+    fontSize: 13,
+    color: '#666',
+  },
+
+  productTag: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '500',
+  },
+
+  postBody: {
+    marginBottom: 16,
+  },
+
+  postTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    lineHeight: 24,
     marginBottom: 8,
   },
-  replyLink: {
-    color: '#007AFF',
-    fontSize: 13,
- 
 
-  },
-  replyInputGroup: {
-    marginTop: 10,
-  },
-  commentOptions:{
-    flexDirection: 'row',
-    gap: 13,
-    alignItems: 'center',
-
-  },
-  replyInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 6,
-    backgroundColor: '#fff',
-  },
-  repliesList: {
-    marginTop: 10,
-    marginLeft: 15,
-  },
-  commentInputGroup: {
-   
-    flexDirection: 'row',
-  
-    marginTop: 13,
-    backgroundColor: '#fff',
-    gap: 5,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
-    borderRadius: 99,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    alignContent: 'center',
-    alignItems: 'center',
-  },
-  commentInput: {
-    flex: 1,
-
- 
-  },
-  newCommentBtn: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 4,
-    paddingHorizontal: 15,
-    borderRadius: 25,
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-
-    color: '#fff',
-    
-  },
-  seperator: {
-    width: 1,
-    height: 15,
-    backgroundColor: '#ddd',
-    marginHorizontal: 5,
-  },
-  postView: {
-    marginBottom: 24,
-  },
-  postTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 5,
-    marginBottom: 5,
-  },
-  postContent: {
+  postText: {
     fontSize: 15,
-    color: '#444',
-    paddingBottom: 10,
+    color: '#333',
+    lineHeight: 20,
   },
-  postUserInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-   
-  },
-  postUserName: {
-    fontSize: 16,
-    fontWeight: 'bold',
 
-    
+  likeInfo: {
+    marginTop: 4,
   },
-  postUserAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  postUserInfoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 7,
-  },
-  postUserInfoLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  postUserInfoRight: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  postUserInfoTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
 
-  },
-  createdAtText: {
-    fontSize: 12,
-    color: '#888',
-  },
-  productSubHeader: {
+  likeInfoText: {
     fontSize: 13,
-    color: '#888',
-    fontWeight: '500',
-    marginTop: 1,
+    color: '#666',
+  },
 
+  likedByUsername: {
+    color: '#007AFF',
+    fontWeight: '500',
   },
-  postDetails: {
-    flexDirection: 'row',
-    marginTop: 12,
-    gap: 10,
-  },
-  postDetailsButton: {
+
+  postActions: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 2,
+    marginBottom: 16,
+  },
 
+  actionButton: {
+    paddingVertical: 8,
+    
+    marginRight: 22,
   },
-  metaText: {
-    marginHorizontal: 2,
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#555',
+
+  // Filter Section
+  filterSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+    paddingTop: 4,
   },
-  votingContainer: {
+
+  filterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    borderColor: '#ddd',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 99,
-    paddingVertical: 6,
-    paddingHorizontal: 13,
+  },
+
+  pickerContainer: {
+    minWidth: 120,
+  },
+
+  picker: {
+    fontSize: 14,
+    color: '#333',
+  },
+
+  commentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  commentCount: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '500',
+  },
+
+  // Comment Input
+  commentInputSection: {
+    flexDirection: 'column',
+    
+    paddingTop: 10,
+    paddingBottom: 4,
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+    gap: 5,
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 10,
+  },
+  postCommands: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingBottom: 6,
+  },
+
+  commentInput: {
+    flex: 1,
+ 
+    paddingHorizontal: 17,
+   
+    fontSize: 15,
+
 
   },
+
+  postButton: {
+  
+   alignItems: 'flex-end',
+   padding: 3,
+  },
+
+  postButtonText: {
+    color: '#000',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+
+  // Comments List
+  commentsList: {
+    paddingBottom: 20,
+    marginTop: 8,
+  },
+
+  // Comment Card
+  commentCard: {
+    backgroundColor: '#ffffff',
+   
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f8f8',
+  },
+
   commentContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderColor: '#ddd',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 99,
-    paddingVertical: 6,
-    paddingHorizontal: 13,
-    
-  },
-  shareContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderColor: '#ddd',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 99,
-    paddingVertical: 6,
-    paddingHorizontal: 13,
-    
-  },
-  viewersContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-
-
-
-    
-  },
-  liveViewers: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 3,
-    gap: 4,
-  },
-  metaTextCount: {
-    fontSize: 12,
-    fontWeight: '500',
-
-  },
-  totalViews: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  metaTextViews: {
-    fontSize: 12,
-    color: '#888',
   },
 
-  userAvatarContainer: {
-    flexDirection: 'row',
-    
+  commentAvatarContainer: {
+    marginRight: 12,
   },
-  commentInnerContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  commentSection: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 8,
 
-  },
   commentAvatar: {
     width: 32,
     height: 32,
-    borderRadius: 20,
-
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderRadius: 16,
   },
+
   commentContent: {
+    flex: 1,
+  },
+
+  commentUsername: {
     fontSize: 14,
-    color: '#444',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+
+  commentText: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 18,
     marginBottom: 8,
   },
-  commentVotingContainer: {
+
+  commentActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
-    borderRadius: 99,
-    paddingHorizontal: 13,
-    paddingVertical: 6,
   },
-  replyBtn: {
-    
 
+  commentVoting: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 12,
+  },
 
+  voteButton: {
+    paddingHorizontal: 4,
+  },
+
+  voteCount: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#333',
+    marginHorizontal: 8,
+  },
+
+  replyButton: {
+    paddingVertical: 4,
+  },
+
+  replyText: {
+    fontSize: 13,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+
+  // Reply Input
+  replyInputContainer: {
+    marginTop: 12,
+    marginLeft: 44,
+  },
+
+  replyInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+
+  // Nested Comments
+  repliesContainer: {
+    marginTop: 12,
+    marginLeft: 44,
+  },
+
+  nestedComment: {
+    borderLeftWidth: 2,
+    borderLeftColor: '#f0f0f0',
+    paddingLeft: 12,
   },
 });
 

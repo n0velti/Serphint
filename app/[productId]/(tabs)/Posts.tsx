@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { usePostOperations } from '@/hooks/data/usePostOperations';
+
+import FeedItem from '@/components/FeedItem';
+
 type PostsProps = {
     params: {
         productId: string;
@@ -13,6 +16,10 @@ function Posts(props: PostsProps) {
 
     const { productId } = useLocalSearchParams();
     const [posts, setPosts] = useState([]);
+
+    const [expanded, setExpanded] = React.useState(true);
+
+    const handlePress = () => setExpanded(!expanded);
 
     const {getPostsByProduct} = usePostOperations();
 
@@ -32,16 +39,16 @@ function Posts(props: PostsProps) {
     }, [productId]);
 
     const renderItem = ({ item }) => (
-        console.log('Rendering item:', item),
-        <TouchableOpacity style={{ padding: 16, borderBottomWidth: 1, borderColor: '#ccc' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{item?.postUser?.userName}</Text>
-
-            <Text>{item?.postContent}</Text>
-        </TouchableOpacity>
+        <FeedItem item={item} />
     );
 
     return (
         <View style={styles.container}>
+            <View style={styles.header}>
+
+
+
+            </View>
             <FlatList
                 data={posts}
                 keyExtractor={(item) => item.id.toString()}
@@ -58,5 +65,13 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',
         padding: 16,
+        paddingTop: 55,
+
+    },
+    header: {
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderColor: '#ccc',
+        marginBottom: 16,
     },
 });

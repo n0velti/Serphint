@@ -58,7 +58,7 @@ const NewPost: React.FC<NewPostProps> = () => {
 
     // Whenever the query changes, perform the search
     useEffect(() => {
-        if (query.length > 0) {
+        if (query?.length > 0) {
             debouncedSearch(query);
         } else {
             setSearchResults([]);
@@ -120,7 +120,7 @@ const NewPost: React.FC<NewPostProps> = () => {
           />
 
            {/* Render search suggestions below input */}
-           {showSuggestions && searchResults.length > 0 && (
+           {showSuggestions && searchResults?.length > 0 && (
                     <FlatList
                     data={searchResults}
                     keyExtractor={(item, index) => `${item.productName}-${index}`}

@@ -184,6 +184,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     backgroundColor: '#fff',
+    paddingTop: 55,
+
   },
   content: {
     width: '80%',

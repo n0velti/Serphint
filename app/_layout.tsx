@@ -34,6 +34,7 @@ export default function RootLayout() {
   const platform = usePlatform();
   const colorScheme = useColorScheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [navBarCollapsed, setNavBarCollapsed] = useState(false);
 
 
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function RootLayout() {
     return (
       
       <View style={styles.container}>
-        <NavBar setIsMenuOpen={setIsMenuOpen} isMenuOpen={isMenuOpen}/>
+        <NavBar setIsMenuOpen={setIsMenuOpen} isMenuOpen={isMenuOpen} navBarCollapsed={navBarCollapsed} setNavBarCollapsed={setNavBarCollapsed}/>
 
         {/* <SubNavBar/> */}
    
@@ -86,12 +87,7 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
-        {isMenuOpen && (
-          <Menu
-          setIsMenuOpen={setIsMenuOpen}
-          />
-
-        )}
+   
       </View>
     );
   }

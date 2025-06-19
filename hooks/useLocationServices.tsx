@@ -24,11 +24,11 @@ export const useLocationServices = () => {
         console.log('Google API Key:', GOOGLE_API_KEY);
         try {
             console.log('Reverse geocoding coordinates:', apiKey);
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyCSAAYY5wInbtYfo7rZRJoWkC6m6UZ8obA'
 `;
          
-            const response = await fetch(url); // this is your current response
-            const data = await response.json(); // this gives you the actual geocode result
+            const response = await fetch(url);
+            const data = await response.json();
             console.log('Reverse geocode data:', data);
             return data.results[0];
         } catch (error) {

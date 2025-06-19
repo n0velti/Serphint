@@ -1,79 +1,60 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions} from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import PostView from '@/components/ui/web/Post/PostView';
-import ProductPreview from '@/components/ui/web/Post/ProductPreview';
+import { View, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import PostViewTwo from '@/components/ui/web/Post/PostViewTwo';
-
-
-
-type ProductProps = {
-    params: {
-        productId: string;
-        postId: string;
-    };
-};
+import ProductPreview from '@/components/ui/web/Post/ProductPreview';
 
 const { width, height } = Dimensions.get('window');
 
-function Product(props: ProductProps) {
-    const { productId, postId } = useLocalSearchParams();
+export default function Product() {
+  const { productId, postId } = useLocalSearchParams();
 
-    console.log('Product ID:', productId);
-    console.log('Post ID:', postId);
+  return (
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.postView}>
+          <PostViewTwo postId={postId} />
+        </View>
+      </ScrollView>
 
+      {/* <View style={styles.productView}>
+        <ProductPreview />
+      </View> */}
+    </View>
+  );
+}
 
-    return (
-        <ScrollView style={styles.container}>
-            <View style={styles.innerContainer}>
+const SIDEBAR_WIDTH = width * 0.29;
 
-                <View style={styles.postView}>
-                    <PostViewTwo postId={postId}/>
-                </View>
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'white',
 
-                {/* <View style={styles.productView}>
-                    <ProductPreview/>
-                </View> */}
-            </View>
-
-        </ScrollView>
-    );
-}   
-
-export default Product;
-
-
-  const styles = StyleSheet.create({
-    container: {
-        backgroundColor: 'white',
-        flex: 1,
-        
-        
-    },
-    innerContainer: {
-        flex: 1,
-        flexDirection: 'row',
-     
-        paddingHorizontal: 10,
-        backgroundColor: 'white',
-        justifyContent: 'space-between',
-     
-    },
-    postView: {
-        flex: 1,
-      
-    },
-    productView: {
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingRight: SIDEBAR_WIDTH + 20, // so content doesn't get hidden under sidebar
    
-         height: height,
-        width: '30%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 10,
-
-    },
-   
-
-
-
-})
+  },
+  postView: {
+    flex: 1,
+  },
+  productView: {
+    position: 'absolute',
+    top: 55,
+    right: 0,
+    width: SIDEBAR_WIDTH,
+    height: height - 55,
+    backgroundColor: 'white',
+ 
+    padding: 20,
+    zIndex: 5,
+  },
+});
