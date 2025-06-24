@@ -20,6 +20,8 @@ function SignIn(props: SignInProps) {
 
     const [nextStep, setNextStep] = useState({});
 
+    const [isSignInError, setIsSignInError] = useState(false);
+
     const {
         setField,
         getField,
@@ -32,23 +34,33 @@ function SignIn(props: SignInProps) {
         const result = validateForm();
         if (result.success) {
             console.log('Form data:', result.data);
+            try {
+               
             // TODO: API call, navigation, etc.
             const {nextStep } = await signInUser(
                 result.data.email,
                 result.data.password,
             )
-
+           
             setNextStep(nextStep);
+  
+        } catch (error) {
+            console.error('Sign-in error ttt:', error);
+            setIsSignInError(true);
+
+            // Handle sign-in error (e.g., show an alert)
+        }
 
 
         } else {
-        
+            console.log('Form validation failed:', result.errors);
             console.log(result.errors); // Optional: log for debugging
         }
     };
 
     if(nextStep.signInStep === 'DONE') {
         console.log('✅ Sign-in complete.');
+        setIsSignInError(false);
         router.replace('/'); // Navigate to the main app
         // You can navigate the user to the main app here
     }
@@ -83,6 +95,12 @@ function SignIn(props: SignInProps) {
                     <Text style={styles.submitButtonText}>Submit</Text>
                 </TouchableOpacity>
             </View>
+
+            {isSignInError && (
+                <Text style={{ color: 'red', textAlign: 'center' }}>
+                    Sign-in failed. Please check your credentials.
+                </Text>
+            )}
         </View>
     );
 }
