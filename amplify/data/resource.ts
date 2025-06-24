@@ -77,7 +77,7 @@ productVariant: a.model({
   price_cent: a.float().required(), // Price in cents
   base_currency: a.string().required(), // Currency code (e.g., "USD", "EUR")
 
-  sku: a.string().required(), // Stock Keeping Unit
+  sku: a.string().required(), // Stock Keeping Unit test
   
   product_variant_regional_info: a.hasMany('productVariantRegionalInfo', 'product_variant_id'),
 
