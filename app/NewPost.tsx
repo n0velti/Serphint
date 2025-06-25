@@ -97,17 +97,20 @@ const NewPost: React.FC<NewPostProps> = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Create a New Post</Text>
-      
+      <Text style={styles.headerText}>Create a New Post</Text>
+
+      <View style={styles.pickInputContainer}>
       <TextInput
-        style={styles.input}
-        placeholder="Pick Product"
+        style={styles.pickInput}
+        placeholder=" Pick Product / Service / Specialist"
         placeholderTextColor="#999"
         onChangeText={handleValueChange}
         value={
             query
         }
       />
+
+      </View>
 
     <TextInput
             style={styles.input}
@@ -152,16 +155,38 @@ const NewPost: React.FC<NewPostProps> = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 19,
     backgroundColor: '#fff',
     flex: 1,
   },
-  header: {
-    fontSize: 24,
+  headerText: {
+    fontSize: 17,
     fontWeight: '600',
-    marginBottom: 20,
+    paddingBottom: 12,
     color: '#333',
   },
+
+  pickInputContainer: {
+
+
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+    borderRadius: 5,
+    paddingHorizontal: 8,
+    gap: 1,
+    backgroundColor: '#f9f9f9',
+  },
+
+
+  pickInput: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    width: '100%',
+    fontSize: 14,
+  },
+    
   input: {
     borderColor: '#ccc',
     borderWidth: 1,

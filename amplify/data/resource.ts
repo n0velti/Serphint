@@ -21,6 +21,7 @@ const schema = a.schema({
     userComment: a.hasMany('Comment', 'commentUserId'),
     userLike: a.hasMany('Like', 'likeUserId'),
     userDislike: a.hasMany('Dislike', 'dislikeUserId'),
+    userSpecialist: a.hasOne('specialist', 'user_id'),
     
   })
   .authorization((allow) => [
@@ -30,18 +31,30 @@ const schema = a.schema({
   ]),
 
 
-Product: a.model({
-  productName: a.string(),
-  productDescription: a.string(),
-  productDollarFigureCost: a.float(), 
-  productCentFigureCost: a.float(), 
-  productBaseCurrency: a.string(),
+compound: a.model({
+  name: a.string().required(), // Name of the compound
+  description: a.string(), // Description of the compound
+  chemical_formula: a.string(), // Chemical formula of the compound
+  mechanism_of_action: a.float(), // Molecular weight of the compound
+  drug_class: a.string(), // Drug class of the compound
+  discovery_year: a.string(), // Year of discovery
+  synonyms: a.string().array(), // Synonyms for the compound
 
+  createdAt: a.string(),
+  updatedAt: a.string(),
+}).authorization((allow) => [
+  allow.ownerDefinedIn('userEmail'),
+  allow.guest(),
+  allow.authenticated(),
+]),
 
-  productMedia: a.ref('Media').array(),
-
-  productPost: a.hasMany('Post', 'postProductId'),
-  productComment: a.hasMany('Comment', 'commentProductId'),
+product: a.model({
+  name: a.string(),
+  category: a.string(),
+  type: a.string(),
+  
+  oem_id: a.id(), // Link product to an OEM
+  oem: a.belongsTo('oem', 'oem_id'),
 
   product_variants: a.hasMany('productVariant', 'product_id'),
 
@@ -65,6 +78,8 @@ productVariant: a.model({
   oem_id: a.id().required(), // Link variant to an OEM
   oem: a.belongsTo('oem', 'oem_id'),
 
+  
+
   name: a.string().required(), // Name of the variant (e.g., "Size", "Color")
   format: a.string().required(), // Format of the variant (e.g., "Small", "Red")
   delivery_method: a.string().required(), // Delivery method (e.g., "Digital", "Physical")
@@ -73,6 +88,9 @@ productVariant: a.model({
   subscription_interval: a.string().required(), // Subscription interval (e.g., "1 month", "3 months")
   is_subscription: a.boolean().required(), // Whether the variant is a subscription
 
+  media: a.ref('Media').array(),
+
+
   price_dollar: a.float().required(), // Price in dollars
   price_cent: a.float().required(), // Price in cents
   base_currency: a.string().required(), // Currency code (e.g., "USD", "EUR")
@@ -80,6 +98,10 @@ productVariant: a.model({
   sku: a.string().required(), // Stock Keeping Unit test
   
   product_variant_regional_info: a.hasMany('productVariantRegionalInfo', 'product_variant_id'),
+
+  post: a.hasMany('Post', 'postProductId'),
+
+  comment: a.hasMany('Comment', 'commentProductId'),
 
 
   createdAt: a.string(),
@@ -158,7 +180,7 @@ Post: a.model({
   postDislikes: a.hasMany('Dislike', 'dislikeTargetId'),
   postProductName: a.string(),
   postProductId: a.id(), // Link post to a product 
-  postProduct: a.belongsTo('Product', 'postProductId'),
+  postProduct: a.belongsTo('product', 'postProductId'),
   postTitle: a.string(),
   postContent: a.string(),
   postUserId: a.id(), // Link post to the user
@@ -176,7 +198,7 @@ Comment: a.model({
   commentPostId: a.id().required(), // Link comment to a post
   commentPost: a.belongsTo('Post', 'commentPostId'),
   commentProductId: a.id(), // Link comment to a product
-  commentProduct: a.belongsTo('Product', 'commentProductId'),
+  commentProduct: a.belongsTo('product', 'commentProductId'),
   commentUserId: a.id(), // Link comment to the user
   commentUser: a.belongsTo('User', 'commentUserId'),
   commentLikes: a.hasMany('Like', 'likeTargetId'),
@@ -229,6 +251,28 @@ Dislike: a.model({
   allow.authenticated(),
 ]),
 
+
+
+specialist: a.model({
+  work_phone_number: a.string(), // Work phone number of the specialist
+  work_email: a.string(), // Work email of the specialist
+  work_address: a.string(), // Work address of the specialist
+  work_hours: a.string(), // Work hours of the specialist
+  work_location: a.string(), // Work location of the specialist
+  work_media: a.ref('Media').array(), // Media related to the specialist
+  work_description: a.string(), // Description of the specialist's work
+  work_specialization: a.string(), // Specialization of the specialist
+  license_number: a.string(), // License number of the specialist
+  license_province: a.string(), // Province of the licens
+  license_country: a.string(), // Country of the license
+
+  user_id: a.id().required(), // Link specialist to a user
+  user: a.belongsTo('User', 'user_id'),
+}).authorization((allow) => [
+  allow.ownerDefinedIn('userEmail'),
+  allow.guest(),
+  allow.authenticated(),
+]),
 
 
 

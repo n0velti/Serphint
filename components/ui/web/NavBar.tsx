@@ -22,9 +22,9 @@ type NavBarProps = {
 };
 
 const navBarButtons = [
-  { name: 'Home', icon: <Entypo name="home" size={19} color="black" />, route: '/' },
-  { name: 'Products and Services', icon: <MaterialIcons name="category" size={19} color="black" />, route: '/ProductsAndServices' },
-  { name: 'Specialists', icon: <FontAwesome6 name="user-doctor" size={19} color="black" />,   route: '/Specialists' },
+  { name: 'Home', icon: <Entypo name="home" size={18} color="black" />, route: '/' },
+  { name: 'Products and Services', icon: <MaterialIcons name="category" size={18} color="black" />, route: '/ProductsAndServices' },
+  { name: 'Specialists', icon: <FontAwesome6 name="user-doctor" size={18} color="black" />,   route: '/Specialists' },
 
 ];
 
@@ -194,8 +194,10 @@ function NavBar({ setIsMenuOpen, isMenuOpen, navBarCollapsed, setNavBarCollapsed
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
+                <View style={styles.titleAreaOne}>
                 {button.icon}
                <Text style={styles.subNavBarButtonText}>{button.name}</Text>
+               </View>
               </Pressable>
             ))}
           </View>
@@ -224,9 +226,12 @@ function NavBar({ setIsMenuOpen, isMenuOpen, navBarCollapsed, setNavBarCollapsed
                     onMouseEnter={() => setBottomHoveredIndex(index)}
                     onMouseLeave={() => setBottomHoveredIndex(null)}
                   >
+                    <View style={styles.titleAreaOne}>
                       {button.icon}
                       <Text style={styles.subNavBarButtonText}>{button.name}</Text>
+                      </View>
                     </Pressable>
+
             
                   )
                   : 
@@ -242,23 +247,22 @@ function NavBar({ setIsMenuOpen, isMenuOpen, navBarCollapsed, setNavBarCollapsed
                     onMouseEnter={() => setBottomHoveredIndex(index)}
                     onMouseLeave={() => setBottomHoveredIndex(null)}
                   >
-                      <View style={styles.innerMenu}>
 
                         <View style={styles.titleArea}>
+
                         <Image
                           source={{ uri: profilePicture || 'https://via.placeholder.com/150' }}
                           style={styles.userAvatar}
                         />
                         <View style={styles.innerTitleArea}>
                           <Text style={styles.userName}>{user?.userAttributes?.name || 'Profile'}</Text>
-                          {/* <Text style={styles.locationText}>{location ? location?.address_components[3]?.long_name + ", " + location?.address_components[6]?.long_name : 'Loading...'}</Text> */}
                         </View>
+
                         </View>
                     
 
 
-                        <Entypo name="dots-three-horizontal" size={18} color="black" />
-                      </View>
+                        <Entypo name="dots-three-horizontal" size={16} color="black" style={{justifyContent: 'flex-end'}} />
                     </Pressable>
                 )
                   ))
@@ -483,8 +487,8 @@ const styles = StyleSheet.create({
 
     },
     userAvatar: {
-      width: 28,
-      height: 28,
+      width:22,
+      height: 22,
       borderRadius: 25,
   
       backgroundColor: '#ccc',
@@ -504,8 +508,9 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',
-      gap:11,
+
       minHeight: 45,
+      justifyContent: 'space-between',
     },
     hoveredSubNavBarButton: {
       backgroundColor: 'rgba(0, 0, 0, 0.1)',
@@ -532,12 +537,19 @@ const styles = StyleSheet.create({
    
       justifyContent: 'space-between',
       width: '100%',
+ 
 
+    },
+    titleAreaOne: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 11,
+      marginLeft: 2,
     },
     titleArea: {
       flexDirection: 'row',
       alignItems: 'center',
- 
+      gap:11,
     },
     userName: {
       fontSize: 13,
@@ -547,8 +559,6 @@ const styles = StyleSheet.create({
     },
     innerTitleArea: {
       flexDirection: 'column',
-      gap: 2,
-      marginLeft: 8,  
 
     },
 
